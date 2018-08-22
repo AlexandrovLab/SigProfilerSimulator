@@ -920,8 +920,8 @@ def main():
     # Ensure that all of the necessary paths and files exist and are ready for simulations
     chromosome_string_path = "references/chromosomes/chrom_string/" + genome + "/"
     chromosome_fasta_path = "references/chromosomes/fasta/" + genome + "/"
-    if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= 1:
-        if os.path.exists(chromosome_fasta_path) == False or len(os.listdir(chromosome_fasta_path)) <= 1:
+    if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
+        if os.path.exists(chromosome_fasta_path) == False or len(os.listdir(chromosome_fasta_path)) <= len(chromosomes):
             print("Chromosomes are not currently saved as individual text files. You will need to download the files from your database of interest.")
             print("Ex: Ensembl-> ftp://ftp.ensembl.org/pub/grch37/update/fasta/homo_sapiens/dna/")
             print("     UCSC Genome Browser -> http://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/")
@@ -929,7 +929,7 @@ def main():
             if proceed == 'Y':
                 print("Downloading the chromosomes now...")
                 try:
-                    os.system("wget -r -l1 --no-parent -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
+                    os.system("wget -r -l1 -c -N --no-parent -A '*.dna.chromosome.*' -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
                     os.system("gunzip references/chromosomes/fasta/" + genome + "/*.gz")
                 except:
                     proceed = input("You may not have wget or homebrew installed. Download those dependencies now?[Y/N]").upper()
@@ -939,12 +939,14 @@ def main():
                         except:
                             os.system('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
                             os.system("brew install wget")
-                            os.system("wget -r -l1 --no-parent -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
+                            os.system("wget -r -l1 -c -N --no-parent -A '*.dna.chromosome.*' -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
                             os.system("gunzip references/chromosomes/fasta/" + genome + "/*.gz")
                             print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
                     else:
                         print("Simulation has stopped. Please download the chromosome files before proceeding with the simulations.")
+                        sys.exit()
             else:
+                print("Simulatoin has stopped. Please download the chromosome files before proceeding with the simulations.")
                 sys.exit()
 
         print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
