@@ -901,9 +901,10 @@ def main():
     #test = "ncRCC"
     test = "BRCA"
     simulation_number = 1
+    species = None
     if genome.upper() == ('GRCH37' or 'GRCH38' or 'HG19' or 'HG38'): 
         species = "homo_sapiens"
-    elif genome.upper() == 'mm10': 
+    elif genome.upper() == 'MM10': 
         species = "mus_musculus"
     else:
         print(genome + " is not supported. The following genomes are supported:\nGRCh37, GRCh38, mm10")
@@ -919,8 +920,8 @@ def main():
     # Ensure that all of the necessary paths and files exist and are ready for simulations
     chromosome_string_path = "references/chromosomes/chrom_string/" + genome + "/"
     chromosome_fasta_path = "references/chromosomes/fasta/" + genome + "/"
-    if os.path.exists(chromosome_string_path) == False:
-        if len(os.listdir(chromosome_fasta_path)) <= 1:
+    if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= 1:
+        if os.path.exists(chromosome_fasta_path) == False or len(os.listdir(chromosome_fasta_path)) <= 1:
             print("Chromosomes are not currently saved as individual text files. You will need to download the files from your database of interest.")
             print("Ex: Ensembl-> ftp://ftp.ensembl.org/pub/grch37/update/fasta/homo_sapiens/dna/")
             print("     UCSC Genome Browser -> http://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/")
@@ -930,8 +931,6 @@ def main():
                 try:
                     os.system("wget -r -l1 --no-parent -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
                     os.system("gunzip references/chromosomes/fasta/" + genome + "/*.gz")
-                    #os.system("python3 save_chrom_string.py " + genome)
-                    #print("Chromosome string files have been created. Continuing with simulations.")
                 except:
                     proceed = input("You may not have wget or homebrew installed. Download those dependencies now?[Y/N]").upper()
                     if proceed == 'Y':
@@ -945,8 +944,11 @@ def main():
                             print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
                     else:
                         print("Simulation has stopped. Please download the chromosome files before proceeding with the simulations.")
+            else:
+                sys.exit()
+
         print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
-        os.system("python3 save_chrom_string.py " + genome)
+        os.system("python3 scripts/save_chrom_strings.py " + genome)
         print("Chromosome string files have been created. Continuing with simulations.")
 
 
