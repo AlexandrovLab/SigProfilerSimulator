@@ -34,6 +34,7 @@ import random
 import os
 import pickle
 import subprocess
+import argparse
 
 
 start_run = time.time()
@@ -321,7 +322,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
                                     mutation_tracker[sample][nuc][random_chromosome] -= 1
                                     nuc_count -= 1
     
-    print ("Mutations have been distributed. Starting simulation for ", sys.argv[1], " context now")
+    print ("Mutations have been distributed. Starting simulation now...")
     return (mutation_tracker)
     
     
@@ -331,7 +332,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
     
     
 
-def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes):
+def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes, test, genome):
     '''
     Simulates mutational signatures in human cancer in an unbiased fashion. The function
         requires a list of sample names, a dictionary of the number of mutations for each
@@ -363,6 +364,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                      mut_start  -> context dependent parameter used to pull sequences of interest
                       mut_save  -> context dependent parameter used to pull sequences of interest
                       updating  -> single value to determine whether updating should occur. 
+                   chromosomes  -> list of chromosomes for the given genome
+                        genome  -> reference genome used for simulation
 
     Returns:
         None 
@@ -508,10 +511,10 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
                                                 # Reassigns the original naming convention for the INDEL and writes it to the output file
                                                 complete_indel = mainType[0] + ':Del:' + subType + ':' + mainType[1]
-                                                print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\t" +  sequence[random_number-1-(l*i):random_number-1 + ((k+1)*i)], file=out)
-                                                
+                                                #print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\t" +  sequence[random_number-1-(l*i):random_number-1 + ((k+1)*i)], file=out)
+                                                print (test + "\t" + sample + "\tSimulation\t" + genome + "\tINDEL\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\tSOMATIC", file=out)
                                                 # Updates the chromosome with the given mutation if desired
-                                                if updating == 'U':
+                                                if updating:
                                                     sequence = update_chromosome(sequence, random_number, sequence[random_number:i+random_number], 'Del')
                                              
                                                 # Remove one mutation count for the current INDEL and update all relevant data structures
@@ -533,10 +536,11 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                                                 #Reassigns the original naming convention for the INDEL and writes it to the output file
                                                 complete_indel = mainType_ins[0] + ':Ins:' + subType + ':' + mainType_ins[1]
                                                 potential_sequence = sequence[random_number:i+random_number]
-                                                print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1] + "\t" + sequence[random_number-1]+potential_sequence + "\t" + sequence[random_number-1-(l*i):random_number]+'['+potential_sequence+']'+sequence[random_number:random_number + ((k+1)*i)], file=out)
-                                                
+                                                #print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1] + "\t" + sequence[random_number-1]+potential_sequence + "\t" + sequence[random_number-1-(l*i):random_number]+'['+potential_sequence+']'+sequence[random_number:random_number + ((k+1)*i)], file=out)
+                                                print (test + "\t" + sample + "\tSimulation\t" + genome + "\tINDEL\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\tSOMATIC", file=out)
+
                                                 # Updates the chromosome with the given mutation if desired
-                                                if updating == 'U':
+                                                if updating:
                                                     sequence = update_chromosome(sequence, random_number, sequence[random_number:i+random_number], 'Ins')
                                             
 
@@ -593,10 +597,11 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
                                                     # Reassigns the original naming convention for the INDEL and writes it to the output file
                                                     complete_indel = mainType1[0] + ':Del:' + subType + ':' + mainType1[1]
-                                                    print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\t" +  sequence[random_number-5:random_number + 6 + k], file=out)
-                                                    
+                                                    #print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\t" +  sequence[random_number-5:random_number + 6 + k], file=out)
+                                                    print (test + "\t" + sample + "\tSimulation\t" + genome + "\tINDEL\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\tSOMATIC", file=out)
+
                                                     # Updates the chromosome with the current INDEL if desired
-                                                    if updating == 'U':
+                                                    if updating:
                                                         sequence = update_chromosome(sequence, random_number, sequence[random_number:i+random_number], 'Del')
                                              
                                                     # Remove one mutation count for the current INDEL and update all relevant data structures       
@@ -619,10 +624,11 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
                                                     # Reassigns the original naming convention for the INDEL and writes it to the output file
                                                     complete_indel = mainType2[0] + ':Del:' + subType + ':' + mainType2[1]
-                                                    print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\t" +  sequence[random_number-5-l:random_number + 6], file=out)
-                                                    
+                                                    #print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\t" +  sequence[random_number-5-l:random_number + 6], file=out)
+                                                    print (test + "\t" + sample + "\tSimulation\t" + genome + "\tINDEL\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\tSOMATIC", file=out)
+
                                                     # Updates the chromosome with the current INDEL if desired
-                                                    if updating == 'U':
+                                                    if updating:
                                                         sequence = update_chromosome(sequence, random_number, sequence[random_number:i+random_number], 'Del')
 
                                                     # Remove one mutation count for the current INDEL and update all relevant data structures
@@ -683,7 +689,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
                                     # Prints the insertion micro-hommology if the insertion length is correct and the homology matches are correct
                                     if sequence[random_number-int(indels_M[1]):random_number] != potential_sequence[-int(indels_M[1]):] and sequence[random_number+M_length+int(indels_M[1]):random_number+M_length+(2*int(indels_M[1]))] != potential_sequence[:int(indels_M[1])] and sequence[random_number:random_number+int(indels_M[1])+1] != potential_sequence[:int(indels_M[1])+1]:
-                                        print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+M_length) + "\t" + sequence[random_number-1] + "\t" + sequence[random_number-1]+potential_sequence + "\t" + sequence[random_number-5:random_number] + "[" + potential_sequence + "]" + sequence[random_number:random_number+int(indels_M[1])+M_length], file=out)
+                                        #print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+M_length) + "\t" + sequence[random_number-1] + "\t" + sequence[random_number-1]+potential_sequence + "\t" + sequence[random_number-5:random_number] + "[" + potential_sequence + "]" + sequence[random_number:random_number+int(indels_M[1])+M_length], file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tINDEL\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\tSOMATIC", file=out)
 
                                         # Remove one mutation count for the current INDEL and update all relevant data structures
                                         mutationsCount[complete_indel] -= 1
@@ -695,7 +702,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                                         break
 
                                         # Updates the chromosome with the current INDEL if desired
-                                        if updating == 'U':
+                                        if updating:
                                             sequence = update_chromosome(sequence, random_number, sequence[random_number:int(indels_M[0])+random_number], 'Ins')
 
                                         out.flush()
@@ -746,7 +753,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                                     # Ensures that the bases are known and that there are no repeats around the insertion
                                     if "N" not in sequence[random_number-int(indels_O[0]):random_number+int(indels_O[0])]:
                                         if sequence[random_number:random_number+int(indels_O[0])] != potential_sequence and sequence[random_number-int(indels_O[0])] != potential_sequence:
-                                            print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+int(indels_O[0])) + "\t" + sequence[random_number-1] + "\t" + sequence[random_number-1]+potential_sequence + "\t" + sequence[random_number-5:random_number]+'['+potential_sequence+']'+sequence[random_number:random_number+5], file=out)
+                                            #print (complete_indel + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+int(indels_O[0])) + "\t" + sequence[random_number-1] + "\t" + sequence[random_number-1]+potential_sequence + "\t" + sequence[random_number-5:random_number]+'['+potential_sequence+']'+sequence[random_number:random_number+5], file=out)
+                                            print (test + "\t" + sample + "\tSimulation\t" + genome + "\tINDEL\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number+i) + "\t" + sequence[random_number-1:i+random_number] + "\t" + sequence[random_number-1] + "\tSOMATIC", file=out)
 
                                             # Remove one mutation count for the current INDEL and update all relevant data structures
                                             mutationsCount[complete_indel] -= 1
@@ -758,7 +766,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                                             break
 
                                             # Updates the chromosome with the current INDEL if desired
-                                            if updating == 'U':
+                                            if updating:
                                                 sequence = update_chromosome(sequence, random_number, sequence[random_number:int(indels_O[0])+random_number], 'Ins')
                                                     
                                             out.flush()
@@ -841,15 +849,19 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                                     if sim != 5 and sim != 4:
                                         context = 'SNP'
                                         bases = nuc_keys[nucIndex][mut_save+2]
-                                        print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tfor\t" , file=out)
+                                        #print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tfor\t" , file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tSNP\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tSOMATIC" + "\tfor\t" , file=out)
+                                    
                                     elif sim == 4:
                                         context = 'SNP'
                                         bases = nuc_keys[nucIndex][mut_save+2]
-                                        print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tfor\t" + str(chrom_bias[random_number]), file=out)
+                                        #print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tfor\t" + str(chrom_bias[random_number]), file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tSNP\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tSOMATIC" + "\tfor\t" + str(chrom_bias[random_number]), file=out)
                                     elif sim == 5:
                                         context = 'DINUC'
                                         bases = nuc_keys[nucIndex][mut_save+3:mut_save+5]
-                                        print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save:mut_save+2] + "\t" + nuc_keys[nucIndex][mut_save+3:mut_save+5] + "\tfor\t", file=out)
+                                        #print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save:mut_save+2] + "\t" + nuc_keys[nucIndex][mut_save+3:mut_save+5] + "\tfor\t", file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tDINUC\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save:mut_save+2] + "\t" + nuc_keys[nucIndex][mut_save+3:mut_save+5] + "\tSOMATIC" + "\tfor\t", file=out)
                                 
                                     mutationsCount[nuc_keys[nucIndex]] -= 1
                                     if mutationsCount[nuc_keys[nucIndex]] == 0:
@@ -865,15 +877,17 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                                     if sim != 5 and sim != 4:
                                         context = 'SNP'
                                         bases = revcompl(nuc_keys[nucIndex][mut_save+2])
-                                        print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+2]) + "\trev\t", file=out)
+                                        #print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+2]) + "\trev\t", file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tSNP\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+2]) + "\tSOMATIC" + "\trev\t", file=out)
                                     elif sim == 4:
                                         context = 'SNP'
                                         bases = revcompl(nuc_keys[nucIndex][mut_save+2])
-                                        print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+2]) + "\trev\t" + str(chrom_bias[random_number]), file=out)
+                                        #print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+2]) + "\trev\t" + str(chrom_bias[random_number]), file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tSNP\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+2]) + "\tSOMATIC\trev\t" + str(chrom_bias[random_number]), file=out)
                                     elif sim == 5:
                                         context = 'DINUC'
                                         bases = revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5])
-                                        print (sample + "\tGRCh37\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save:mut_save+2]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5]) + "\trev\t", file=out)
+                                        print (test + "\t" + sample + "\tSimulation\t" + genome + "\tDINUC\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + revcompl(nuc_keys[nucIndex][mut_save:mut_save+2]) + "\t" + revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5]) + "\tSOMATIC\trev\t", file=out)
                        
                                     mutationsCount[nuc_keys[nucIndex]] -= 1
                                     if mutationsCount[nuc_keys[nucIndex]] == 0:
@@ -883,7 +897,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
                             # If the user specified udpating mutations, proceeds to update the chromosome
                             # with the current mutation
-                            if updating == 'U' and bases != None:
+                            if updating and bases != None:
                                 sequence = update_chromosome(sequence, random_number, bases, context)
             
                             out.flush()
@@ -896,11 +910,29 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
     
     
 def main():
-    #############################Organize Files, Data, and Inputs#############################  
-    genome = "mm10"  
-    #test = "ncRCC"
-    test = "BRCA"
+    #############################Organize Files, Data, and Inputs#############################
     simulation_number = 1
+    updating = False
+    exome = False
+
+    parser = argparse.ArgumentParser(description="Provide the necessary arguments to begin simulations.")
+    parser.add_argument("--test", "-t",help="Provide a unique name for your samples. (ex: BRCA)")
+    parser.add_argument("--genome", "-g",help="Provide a reference genome. (ex: GRCh37, GRCh38, mm10)")
+    parser.add_argument("--context", "-c",help="Provide the nucleotide context (ex: 96, 192, 1536, 3072, INDEL, DINUC).")
+    parser.add_argument("-e", "--exome", help="Optional parameter instructs script to create the catalogues using only the exome regions. Whole genome context by default", action='store_true')
+    parser.add_argument("--simulations", "-s", help="Provide the number of simulations per sample. The defualt is 1 simulation per sample.")
+    parser.add_argument("-u", "--update", help="Optional parameter. Determines whether the chromosomes are updated with the current mutation.", action='store_true')
+
+
+    args=parser.parse_args()
+    test = args.test
+    genome = args.genome
+    context = args.context
+    simulation_number = int(args.simulations)
+    updating = args.update
+    if args.exome:
+        exome = True
+
     species = None
     if genome.upper() == ('GRCH37' or 'GRCH38' or 'HG19' or 'HG38'): 
         species = "homo_sapiens"
@@ -917,7 +949,9 @@ def main():
     if species == 'mus_musculus':
         chromosomes = chromosomes[:19]
 
-    # Ensure that all of the necessary paths and files exist and are ready for simulations
+    # Ensures that all of the necessary paths and files exist and are ready for simulations
+
+    # Ensures that the chromosome strings are saves properly:
     chromosome_string_path = "references/chromosomes/chrom_string/" + genome + "/"
     chromosome_fasta_path = "references/chromosomes/fasta/" + genome + "/"
     if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
@@ -950,84 +984,94 @@ def main():
                 sys.exit()
 
         print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
-        os.system("python3 scripts/save_chrom_strings.py " + genome)
+        os.system("python3 scripts/save_chrom_strings.py -g " + genome)
         print("Chromosome string files have been created. Continuing with simulations.")
 
 
-
+    # Ensures that the chromosome proportions are saved 
     if os.path.exists(chromosome_string_path + genome + "_proportions.txt") == False:
         print("Chromosome proportion file does not exist. Creating now...")
         chromosomeProbs = chrom_proportions(chromosome_string_path, genome, chromosomes)
         print("Chromosome proportion file created. Proceeding with simulation...")
 
-    catalogue_file = "references/matrix/" + test + ".genome.mut" + str(sys.argv[1]) # input file
+    # Ensures the catalogue file is saved for the given context
+    catalogue_file = "references/matrix/" + test + ".genome.mut" + context # input file
     vcf_files = "references/vcf_files/" + test + "/"
-
     if os.path.exists (catalogue_file) == False:
         if os.path.exists (vcf_files) == False or len(os.listdir(vcf_files)) == 0:
             print ("Please place your vcf files for each sample into the 'references/vcf_files/[test]/' directory. Once you have done that, rerun this script.")
         else:
-            proceed = input(test + ".genome.mut" + str(sys.argv[1] + " does not exist. Would you like to create this file now? [Y/N]")).upper()
+            proceed = input(test + ".genome.mut" + context + " does not exist. Would you like to create this file now? [Y/N]").upper()
             if proceed == 'Y':
                 print("Creating the matrix file now. This may take some time...")
-                os.system("python3 scripts/catalogue_generator_with_matrix.py " + str(sys.argv[1]) + " " + test)
+                if exome:
+                    os.system("python3 scripts/catalogue_generator_with_matrix.py -c " + context + " -g " + genome + " -t "+ test + " -e")
+                else:
+                    os.system("python3 scripts/catalogue_generator_with_matrix.py -c " + context + " -g " + genome + " -t "+ test)
                 print("The matrix file has been created. Continuing with simulations...")
             else:
                 print("Simulation has stopped. Please create the catalogue file before continuing with simulations.")
                 sys.exit()
 
+    # Ensures that the transcriptional strand reference files are saved properly
     chromosome_TSB_path = "references/chromosomes/tsb/" + genome + "/"
-    if os.path.exists(chromosome_TSB_path) == False:
+    transcript_files = "references/chromosomes/transcripts/" + genome + "/"
+    if len(os.listdir(transcript_files)) < 1 or os.path.exists(transcript_files) == False:
+        print("Please download the transcript files before proceeding. You can download the files from 'http://www.ensembl.org/biomart/martview'.")
+        print("Follow the format presented in the README file:\n\n\tGene stable ID  Transcript stable ID    Chromosome/scaffold name    Strand  Transcript start (bp)   Transcript end (bp)")
+        sys.exit()
+    if os.path.exists(chromosome_TSB_path) == False or len(os.listdir(chromosome_TSB_path)) < len(chromosomes):
         proceed = input("The transcriptional data has not been saved. Would you like to run the script now? [Y/N]").upper()
         if proceed == 'Y':
-            os.system("python3 scripts/save_tsb_info.py " + genome)
+            print("Proceeding...")
+            os.system("python3 scripts/save_tsb_192.py -g " + genome)
 
-    nucleotide_context_file = "references/chromosomes/context_distributions/context_distribution_" + genome + "_" + str(sys.argv[1]) + ".csv"
-    if os.path.exists(nucleotide_context_file) == False and str(sys.argv[1]) != 'INDEL':
+    # Esnures that the nucleotide context files are saved properly
+    nucleotide_context_file = "references/chromosomes/context_distributions/context_distribution_" + genome + "_" + context + ".csv"
+    if os.path.exists(nucleotide_context_file) == False and context != 'INDEL':
         proceed_nuc = input("The context distribution file does not exist. You will need to create this file before simulating. Would you like to run the script to generate this file now? [Y/N]").upper()
         if proceed_nuc == 'Y':
-            os.system("python3 scripts/save_context_distribution_96_192_1536_DINUC.py " + str(sys.argv[1]) + " " + genome) 
+            os.system("python3 scripts/save_context_distribution_96_192_1536_DINUC.py -c " + context + " -g " + genome) 
             print("Context distribution file successfully created. Proceeding with simulation...")
         else:
             print("Simulation has stopped. Please generate the context distribution file before simulating.")
             sys.exit()
 
 
-    output_path = "simulation_output/" + test + '_simulations_' + genome + '_' + str(sys.argv[1]) + '/'
+    output_path = "simulation_output/" + test + '_simulations_' + genome + '_' + context + '/'
     
 
     # Set parameters for 96, 1536, TSB, DINUC, or INDEL:
     sim = None
     mut_start = None
     mut_length = None
-    if str(sys.argv[1]) == '96':
+    if context == '96':
         sim = 2
         mut_start = 1
         mut_save = 2
-    elif sys.argv[1] == '1536':
+    elif context == '1536':
         sim = 3
         mut_start = 2
         mut_save = 3
-    elif sys.argv[1] == '192':
+    elif context == '192':
         sim = 4 
         mut_start = 1
         mut_save = 4
-    elif sys.argv[1] == 'DINUC':
+    elif context == 'DINUC':
         sim = 5
         mut_start = 0
         mut_save = 0
-    elif sys.argv[1] == 'INDEL':
+    elif context == 'INDEL':
         sim = 6
         mut_save = 0
         mut_start = 0
         
-    updating = sys.argv[2]
 
     # Begin the simulation process
     mut_prep = mutation_preparation(catalogue_file)
     reference_sample = mut_prep[0][0]
     mut_dict = mut_tracker(mut_prep[0], mut_prep[1], reference_sample, nucleotide_context_file, sim, chromosome_string_path, genome, chromosomes)
-    simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes)
+    simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes, test, genome)
     
 if __name__ == '__main__':
     main()
