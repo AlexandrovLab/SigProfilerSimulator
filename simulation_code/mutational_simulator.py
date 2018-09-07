@@ -332,7 +332,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
     
     
 
-def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes, test, genome):
+def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes, test, genome, context):
     '''
     Simulates mutational signatures in human cancer in an unbiased fashion. The function
         requires a list of sample names, a dictionary of the number of mutations for each
@@ -366,6 +366,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
                       updating  -> single value to determine whether updating should occur. 
                    chromosomes  -> list of chromosomes for the given genome
                         genome  -> reference genome used for simulation
+                       context  -> desired nucleotide context for simulation
 
     Returns:
         None 
@@ -1005,9 +1006,9 @@ def main():
             if proceed == 'Y':
                 print("Creating the matrix file now. This may take some time...")
                 if exome:
-                    os.system("python3 scripts/catalogue_generator_with_matrix.py -c " + context + " -g " + genome + " -t "+ test + " -e")
+                    os.system("python3 scripts/sigProfilerMatrixGenerator.py -c " + context + " -g " + genome + " -t "+ test + " -e")
                 else:
-                    os.system("python3 scripts/catalogue_generator_with_matrix.py -c " + context + " -g " + genome + " -t "+ test)
+                    os.system("python3 scripts/sigProfilerMatrixGenerator.py -c " + context + " -g " + genome + " -t "+ test)
                 print("The matrix file has been created. Continuing with simulations...")
             else:
                 print("Simulation has stopped. Please create the catalogue file before continuing with simulations.")
@@ -1071,7 +1072,7 @@ def main():
     mut_prep = mutation_preparation(catalogue_file)
     reference_sample = mut_prep[0][0]
     mut_dict = mut_tracker(mut_prep[0], mut_prep[1], reference_sample, nucleotide_context_file, sim, chromosome_string_path, genome, chromosomes)
-    simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes, test, genome)
+    simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, chromosome_TSB_path, simulation_number, output_path, sim, mut_start, mut_save, updating, chromosomes, test, genome, context)
     
 if __name__ == '__main__':
     main()
