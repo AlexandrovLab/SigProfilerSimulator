@@ -39,6 +39,7 @@ import argparse
 import logging
 import datetime
 
+
 start_run = time.time()
 
 
@@ -47,6 +48,7 @@ start_run = time.time()
 
 revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N'}[B] for B in x][::-1])
 
+#@profile
 def chrom_proportions (chrom_path, genome, chromosomes):
 	'''
 	Creates a text file that contains the proportional size of each chromosome in relation to 
@@ -79,7 +81,7 @@ def chrom_proportions (chrom_path, genome, chromosomes):
 	with open (chrom_path + genome + "_proportions.txt", 'wb') as out:
 		pickle.dump(chromosomeProbs, out)
 
-
+#@profile
 def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 	'''
 	Creates a text file that contains the proportional size of each chromosome in relation to 
@@ -134,7 +136,7 @@ def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 
 
 
-
+#@profile
 def update_chromosome ( chrom, location, bases, context):
 	'''
 	Updates a given chromosome or sequence based upon a given context.
@@ -173,7 +175,7 @@ def update_chromosome ( chrom, location, bases, context):
 			chromosome[location+i] = bases[i]
 	return(chromosome)
 
-
+#@profile
 def random_base (limit_start, limit_end):
 	'''
 	Returns a random nucleotide.
@@ -185,7 +187,7 @@ def random_base (limit_start, limit_end):
 
 	return (('ATCG')[random.randint(limit_start,limit_end)])
 
-
+#@profile
 def bed_ranges (chrom_sim, bed_file):
 	'''
 	Returns a list containing the positions corresponding with the desired
@@ -234,7 +236,7 @@ def bed_ranges (chrom_sim, bed_file):
 	chrom_range.sort()
 	return(chrom_range)
 
-
+#@profile
 def mutation_preparation (catalogue_files):
 	'''
 	Returns a list of all sample names and a dictionary containing the mutation count
@@ -866,7 +868,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
 													# Reassigns the original naming convention for the INDEL and writes it to the output file
 													complete_indel = mainType[0] + ':Del:' + subType + ':' + mainType[1]
-													print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number),"\t",str(random_number+i),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t", complete_indel]), file=out)
+													print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t", complete_indel]), file=out)
 
 													if not overlap:
 														for z in range (random_number-1, random_number+i+1,1):
@@ -902,7 +904,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 													#Reassigns the original naming convention for the INDEL and writes it to the output file
 													complete_indel = mainType_ins[0] + ':Ins:' + subType + ':' + mainType_ins[1]
 													potential_sequence = sequence[random_number:i+random_number]
-													print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number),"\t",str(random_number+i),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t",complete_indel]), file=out)
+													print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t",complete_indel]), file=out)
 													
 													if not overlap:
 														for z in range (random_number-1, random_number+i+1,1):
@@ -975,7 +977,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
 														# Reassigns the original naming convention for the INDEL and writes it to the output file
 														complete_indel = mainType1[0] + ':Del:' + subType + ':' + mainType1[1]
-														print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number),"\t",str(random_number+i),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t", complete_indel]), file=out)
+														print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t", complete_indel]), file=out)
 														
 														if not overlap:
 															for z in range (random_number-1, random_number+i+1,1):
@@ -1011,7 +1013,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
 														# Reassigns the original naming convention for the INDEL and writes it to the output file
 														complete_indel = mainType2[0] + ':Del:' + subType + ':' + mainType2[1]
-														print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number),"\t",str(random_number+i),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t", complete_indel]), file=out)
+														print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",sequence[random_number-1:i+random_number],"\t",sequence[random_number-1],"\tSOMATIC\t", complete_indel]), file=out)
 														
 														if not overlap:
 															for z in range (random_number-1, random_number+i+1,1):
@@ -1086,7 +1088,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											if stop_flag:
 												break
 
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number),"\t",str(random_number+M_length),"\t",sequence[random_number-1],"\t",sequence[random_number-1]+potential_sequence,"\tSOMATIC\t",complete_indel]), file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+M_length+1),"\t",sequence[random_number-1],"\t",sequence[random_number-1]+potential_sequence,"\tSOMATIC\t",complete_indel]), file=out)
 											
 											if not overlap:
 												for z in range (random_number-1, random_number+M_length+1,1):
@@ -1158,7 +1160,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 												if stop_flag:
 													break
 													
-												print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number),"\t",str(random_number+int(indels_O[0])),"\t",sequence[random_number-1],"\t",sequence[random_number-1]+potential_sequence,"\tSOMATIC\t", complete_indel]), file=out)
+												print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+int(indels_O[0])+1),"\t",sequence[random_number-1],"\t",sequence[random_number-1]+potential_sequence,"\tSOMATIC\t", complete_indel]), file=out)
 
 												if not overlap:
 													for z in range (random_number-1, random_number+int(indels_O[0])+1,1):
@@ -1256,12 +1258,12 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 										if sim != 5 and sim != 4 and sim != 7:
 											context = 'SNP'
 											bases = nuc_keys[nucIndex][mut_save+2]
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number),"\t",str(random_number),"\t",nuc_keys[nucIndex][mut_save],"\t",nuc_keys[nucIndex][mut_save+2],"\tSOMATIC\tfor\t"]) , file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number+1),"\t",str(random_number+1),"\t",nuc_keys[nucIndex][mut_save],"\t",nuc_keys[nucIndex][mut_save+2],"\tSOMATIC\tfor\t"]) , file=out)
 
 										elif sim == 5:
 											context = 'DINUC'
 											bases = nuc_keys[nucIndex][mut_save+3:mut_save+5]
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tDINUC\t",chrom,"\t",str(random_number),"\t",str(random_number),"\t",nuc_keys[nucIndex][mut_save:mut_save+2],"\t",nuc_keys[nucIndex][mut_save+3:mut_save+5],"\tSOMATIC\tfor\t"]), file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tDINUC\t",chrom,"\t",str(random_number+1),"\t",str(random_number+1),"\t",nuc_keys[nucIndex][mut_save:mut_save+2],"\t",nuc_keys[nucIndex][mut_save+3:mut_save+5],"\tSOMATIC\tfor\t"]), file=out)
 
 										mutationsCount[nuc_keys[nucIndex]] -= 1
 										if mutationsCount[nuc_keys[nucIndex]] == 0:
@@ -1277,12 +1279,12 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 										if sim != 5 and sim != 4 and sim != 7:
 											context = 'SNP'
 											bases = revcompl(nuc_keys[nucIndex][mut_save+2])
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number),"\t",str(random_number),"\t",revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\tSOMATIC\trev\t"]), file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number+1),"\t",str(random_number+1),"\t",revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\tSOMATIC\trev\t"]), file=out)
 
 										elif sim == 5:
 											context = 'DINUC'
 											bases = revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5])
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tDINUC\t",chrom,"\t",str(random_number),"\t",str(random_number),"\t",revcompl(nuc_keys[nucIndex][mut_save:mut_save+2]),"\t",revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5]),"\tSOMATIC\trev\t"]), file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tDINUC\t",chrom,"\t",str(random_number+1),"\t",str(random_number+1),"\t",revcompl(nuc_keys[nucIndex][mut_save:mut_save+2]),"\t",revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5]),"\tSOMATIC\trev\t"]), file=out)
 
 										mutationsCount[nuc_keys[nucIndex]] -= 1
 										if mutationsCount[nuc_keys[nucIndex]] == 0:
@@ -1371,7 +1373,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											context = 'SNP'
 											bases = nuc_keys[nucIndex][mut_save+2]
 											#print (project + "\t" + sample + "\tSimulation\t" + genome + "\tSNP\t" + chrom + "\t" + str(random_number) + "\t" + str(random_number) + "\t" + nuc_keys[nucIndex][mut_save] + "\t" + nuc_keys[nucIndex][mut_save+2] + "\tSOMATIC" + "\tfor\t" + tsb_type, file=out)
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number),"\t",str(random_number),"\t",nuc_keys[nucIndex][mut_save],"\t",nuc_keys[nucIndex][mut_save+2],"\tSOMATIC\tfor\t",tsb_type]), file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number+1),"\t",str(random_number+1),"\t",nuc_keys[nucIndex][mut_save],"\t",nuc_keys[nucIndex][mut_save+2],"\tSOMATIC\tfor\t",tsb_type]), file=out)
 
 											mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] -= 1
 											if mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] == 0:
@@ -1386,7 +1388,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 										if nuc_keys[nucIndex] in mutationsCountTSB[tsb_type].keys() and mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] != 0:
 											context = 'SNP'
 											bases = revcompl(nuc_keys[nucIndex][mut_save+2])
-											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number),"\t",str(random_number),"\t",revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\tSOMATIC\trev\t",tsb_type]), file=out)
+											print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tSNP\t",chrom,"\t",str(random_number+1),"\t",str(random_number+1),"\t",revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\tSOMATIC\trev\t",tsb_type]), file=out)
 
 											mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] -= 1
 											if mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] == 0:
@@ -1576,24 +1578,27 @@ def main():
 				if proceed == 'Y':
 					print("Creating the matrix file now. This may take some time...")
 					os.chdir(matrix_dir)
+					command_suffix = ""
+					if bed:
+						command_suffix = ' -b ' + bed_file
 					if exome:
 						#if 'INDEL' in contexts:
 						if context == 'INDEL':
 							if limited_indel:
-								os.system("python3 sigProfilerMatrixGenerator.py -i -g " + genome + " -t "+ project + " -e" + " -b " + bed_file)
+								os.system("python3 sigProfilerMatrixGenerator.py -i -g " + genome + " -p "+ project + " -e" + command_suffix)
 							else:
-								os.system("python3 sigProfilerMatrixGenerator.py -ie -g " + genome + " -t "+ project + " -e" + " -b " + bed_file)
+								os.system("python3 sigProfilerMatrixGenerator.py -ie -g " + genome + " -p "+ project + " -e" + command_suffix)
 						else:
-							os.system("python3 sigProfilerMatrixGenerator.py -g " + genome + " -t "+ project + " -e" + " -b " + bed_file)
+							os.system("python3 sigProfilerMatrixGenerator.py -g " + genome + " -p "+ project + " -e" + command_suffix)
 					else:
 						#if 'INDEL' in contexts:
 						if context == 'INDEL':
 							if limited_indel:
-								os.system("python3 sigProfilerMatrixGenerator.py -i -g " + genome + " -t "+ project + " -b " + bed_file)
+								os.system("python3 sigProfilerMatrixGenerator.py -i -g " + genome + " -p "+ project + command_suffix)
 							else:
-								os.system("python3 sigProfilerMatrixGenerator.py -ie -g " + genome + " -t "+ project + " -b " + bed_file)
+								os.system("python3 sigProfilerMatrixGenerator.py -ie -g " + genome + " -p "+ project + command_suffix)
 						else:
-							os.system("python3 sigProfilerMatrixGenerator.py -g " + genome + " -t "+ project + " -b " + bed_file)
+							os.system("python3 sigProfilerMatrixGenerator.py -g " + genome + " -p "+ project + command_suffix)
 
 					print("The matrix file has been created. Continuing with simulations...")
 				else:
