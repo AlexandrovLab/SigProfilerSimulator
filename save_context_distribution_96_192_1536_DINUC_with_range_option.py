@@ -35,7 +35,7 @@ import argparse
 revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N'}[B] for B in x][::-1])
 
 
-def context_distribution (context_input, output_file, chromosome_path, chromosome_TSB_path, chromosomes):
+def context_distribution (context_input, output_file, chromosome_path, chromosomes, tsb_ref):
 	'''
 	Creates a csv file for the distribution of nucleotides given a specific context. 
 	This csv file needs to be created before simulating mutationalsigantures for the 
@@ -50,7 +50,6 @@ def context_distribution (context_input, output_file, chromosome_path, chromosom
 			  context_input  -> simulation context of interest (ex: 96, 192, 1536, 3072, DINUC, INDEL)
 				output_file  -> file where the distribution for the given nucleotide context is saved (csv file)
 			chromosome_path  -> path to the reference chromosomes
-		chromosome_TSB_path  -> path to the transcriptional strand bias references
 				chromosomes  -> list of chromosomes for the species of interest
 
 	Returns:
@@ -84,18 +83,21 @@ def context_distribution (context_input, output_file, chromosome_path, chromosom
 
 	# Iterate through each chromosome and open the associated file
 	for chrom in chromosomes:
-		with open (chromosome_path + chrom + ".txt") as f:
-			chromosome = f.readline().strip()
-			chromosome_lengths.append(len(chromosome))
+		with open (chromosome_path + chrom + ".txt", "rb") as f:
 
+			chromosome = f.read().strip()
+			chromosome_lengths.append(len(chromosome))
+			print(chrom, len(chromosome))
 			# If desired context is for TSB, open the transcriptional file, too
-			if context_input == '192' or context_input == '3072':
-				with open (chromosome_TSB_path + chrom + "_192.txt", 'rb') as tsb:
-					chromosome_tsb = tsb.read()
+			# if context_input == '192' or context_input == '3072':
+			# 	with open (chromosome_TSB_path + chrom + "_192.txt", 'rb') as tsb:
+			# 		chromosome_tsb = tsb.read()
 
 			# Iterate through the chromosome base by base
 			for i in range (0, (len(chromosome)-context), 1):
-				nuc = chromosome[i:i+context]
+				nuc = ''
+				for l in range (i, i+context, 1):
+					nuc += tsb_ref[chromosome[l]][1]
 				base = nuc[int(context/2)]
 
 				count += 1
@@ -114,7 +116,7 @@ def context_distribution (context_input, output_file, chromosome_path, chromosom
 
 						# Adjust the nucleotide representaiton if TSB is desired
 						if context_input == '192' or context_input == '3072':
-							bias = chromosome_tsb[i+int(context/2)]
+							bias = tsb_ref[chromosome[i+int(context/2)]][0]
 
 							if bias == 0:
 								nuc = 'N:' + nuc
@@ -151,7 +153,7 @@ def context_distribution (context_input, output_file, chromosome_path, chromosom
 
 
 		print("chrom ", chrom, "done")
-	print(probs)
+	print(probs, chromosome_lengths)
 	# Write the resulting dictionary to the csv file
 	with open (output_file, 'w') as out:
 		print(' ,', end='', file=out)
@@ -161,8 +163,11 @@ def context_distribution (context_input, output_file, chromosome_path, chromosom
 		for nuc in probs.keys():
 			print (nuc + ',', end='', file=out)
 			for i in range (0, len(chromosomes[:-1]), 1):
-				print(str(probs[nuc][chromosomes[i]]/chromosome_lengths[i]) + ',', end='', file=out)
-				out.flush()
+				try:
+					print(str(probs[nuc][chromosomes[i]]/chromosome_lengths[i]) + ',', end='', file=out)
+					out.flush()
+				except:
+					print(str(0) + ',', end='', file=out)
 			print(probs[nuc][chromosomes[-1]]/chromosome_lengths[-1], file=out)
 
 
@@ -172,7 +177,7 @@ def context_distribution (context_input, output_file, chromosome_path, chromosom
 	os.system (sort_command_1 + output_file + sort_command_2 + output_file)
 
 
-def context_distribution_BED (context_input, output_file, chromosome_path, chromosome_TSB_path, chromosomes, bed, bed_file):
+def context_distribution_BED (context_input, output_file, chromosome_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_dir, tsb_ref):
 	'''
 	Creates a csv file for the distribution of nucleotides given a specific context and BED file. 
 	This csv file needs to be created before simulating mutationalsigantures for the given 
@@ -187,7 +192,6 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 			  context_input  -> simulation context of interest (ex: 96, 192, 1536, 3072, DINUC, INDEL)
 				output_file  -> file where the distribution for the given nucleotide context is saved (csv file)
 			chromosome_path  -> path to the reference chromosomes
-		chromosome_TSB_path  -> path to the transcriptional strand bias references
 				chromosomes  -> list of chromosomes for the species of interest
 						bed  -> flag that determines if the user has provided a BED file with specific ranges to simulate
 				   bed_file  -> BED file that contains the ranges of interest
@@ -205,11 +209,10 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 
 	dinuc_types = ['AA', 'AC', 'AG', 'AT', 'CA', 'CC', 'CG', 'GA', 'GC', 'TA']
 
-
 	# Set the context parameter based upon the user input
 	if context_input == '96' or context_input == '192':
 		context = 3
-	elif context_input == '1536':
+	elif context_input == '1536' or context_input == '3072':
 		context = 5
 	elif context_input == 'DINUC':
 		context = 2
@@ -222,32 +225,40 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 	chromosome_lengths = {}
 	first_line = True
 	chrom_length = 0
-	with open("references/vcf_files/BED/" + bed_file) as b_file:
+	if exome:
+		file_to_open = ref_dir + "/references/chromosomes/exome/" + genome + "/" + exome_file
+	else:
+		file_to_open = ref_dir + "/references/vcf_files/BED/" + bed_file
+	with open(file_to_open) as b_file:
 		next(b_file)
 		for lines in b_file:
 			line = lines.strip().split()
 			chrom = line[0]
-			start = line[1]
-			end = line[2]
+			if len(chrom) > 1 and chrom[0:3].upper() == 'CHR':
+				chrom = chrom[3:]
+			start = int(line[1])
+			end = int(line[2])
 
 			if first_line:
 				chrom_initial = chrom
 				first_line = False 
 				f = open (chromosome_path + chrom + ".txt")
-				chromosome = f.readline().strip()
-				if context == '192':
-					tsb = open (chromosome_TSB_path + chrom + "_192.txt", 'rb')
-					chromosome_tsb = tsb.read()
+				chromosome = f.read().strip()
+				# if context_input == '192' or context_input == '3072':
+				# 	tsb = open (chromosome_TSB_path + chrom + "_192.txt", 'rb')
+				# 	chromosome_tsb = tsb.read()
 
 			if chrom == chrom_initial:
 				chrom_length += end-start
 				for i in range(start, end+1-context, 1):
-					nuc = chromosome[i:i+context]
+					nuc = ''
+					for l in range(i, i+context,1):
+						nuc += tsb_ref[chromosome[l]][1]
 					base = nuc[int(context/2)]
 
 					count += 1
 					if count == 100000:
-						print(i)
+						#print(i)
 						count = 0
 					# Skip the base if unknown 
 					if "N" in nuc:
@@ -260,8 +271,8 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 								nuc = revcompl(nuc)
 
 							# Adjust the nucleotide representaiton if TSB is desired
-							if context_input == '192':
-								bias = chromosome_tsb[i+int(context/2)]
+							if context_input == '192' or context_input == '3072':
+								bias = tsb_ref[chromosome[i+int(context/2)]][0]
 
 								if bias == 0:
 									nuc = 'N:' + nuc
@@ -284,7 +295,8 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 						else:
 							# Populate the dictionary if desired context is DINUC
 							for dinuc in dinuc_types:
-								probs[dinuc] = {}
+								if dinuc not in probs.keys():
+									probs[dinuc] = {}
 
 							# Update the dictionary for the current nucleotide
 							if nuc not in probs.keys():
@@ -300,66 +312,70 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 				chrom_length = end-start
 				chrom_initial = chrom
 				f = open (chromosome_path + chrom + ".txt")
-				chromosome = f.readline().strip()
+				chromosome = f.read().strip()
 				#chromosome_lengths.append(len(chromosome))
-				if context == '192':
-					tsb = open (chromosome_TSB_path + chrom + "_192.txt", 'rb')
-					chromosome_tsb = tsb.read()
+				# if context_input == '192' or context_input == '3072':
+				# 	tsb = open (chromosome_TSB_path + chrom + "_192.txt", 'rb')
+				# 	chromosome_tsb = tsb.read()
 
-					for i in range(start, end+1-context, 1):
-						nuc = chromosome[i:i+context]
-						base = nuc[int(context/2)]
+				for i in range(start, end+1-context, 1):
+					nuc = ''
+					for l in range(i,i+context,1):
+						nuc += tsb_ref[chromosome[l]][1]
+					base = nuc[int(context/2)]
 
-						count += 1
-						if count == 100000:
-							print(i)
-							count = 0
-						# Skip the base if unknown 
-						if "N" in nuc:
-							pass
+					count += 1
+					if count == 100000:
+						#print(i)
+						count = 0
+					# Skip the base if unknown 
+					if "N" in nuc:
+						pass
 
-						else:
-							if context_input != "DINUC":
-								# Only save the pyrimidine context (canonical)
-								if base == 'A' or base == 'G':
-									nuc = revcompl(nuc)
+					else:
+						if context_input != "DINUC":
+							# Only save the pyrimidine context (canonical)
+							if base == 'A' or base == 'G':
+								nuc = revcompl(nuc)
 
-								# Adjust the nucleotide representaiton if TSB is desired
-								if context_input == '192':
-									bias = chromosome_tsb[i+int(context/2)]
+							# Adjust the nucleotide representaiton if TSB is desired
+							if context_input == '192' or context_input == '3072':
+								bias = tsb_ref[chromosome[i+int(context/2)]][0]
 
-									if bias == 0:
-										nuc = 'N:' + nuc
-									elif bias == 1:
-										nuc = 'T:' + nuc
-									elif bias == 2:
-										nuc = 'U:' + nuc
-									else:
-										nuc = 'B:' + nuc 
-
-								# Update the dictionary for the current nucleotide
-								if nuc not in probs.keys():
-									probs[nuc] = {chrom:1}
+								if bias == 0:
+									nuc = 'N:' + nuc
+								elif bias == 1:
+									nuc = 'T:' + nuc
+								elif bias == 2:
+									nuc = 'U:' + nuc
 								else:
-									if chrom not in probs[nuc].keys():
-										probs[nuc][chrom] = 1
-									else:
-										probs[nuc][chrom] += 1
+									nuc = 'B:' + nuc 
 
+							# Update the dictionary for the current nucleotide
+							if nuc not in probs.keys():
+								probs[nuc] = {chrom:1}
 							else:
-								# Populate the dictionary if desired context is DINUC
-								for dinuc in dinuc_types:
-									probs[dinuc] = {}
-
-								# Update the dictionary for the current nucleotide
-								if nuc not in probs.keys():
-									nuc = revcompl(nuc)
-									
-								if chrom not in probs[nuc]:
+								if chrom not in probs[nuc].keys():
 									probs[nuc][chrom] = 1
 								else:
 									probs[nuc][chrom] += 1
 
+						else:
+							# Populate the dictionary if desired context is DINUC
+							for dinuc in dinuc_types:
+								if dinuc not in probs.keys():
+									probs[dinuc] = {}
+
+							# Update the dictionary for the current nucleotide
+							if nuc not in probs.keys():
+								nuc = revcompl(nuc)
+								
+							if chrom not in probs[nuc]:
+								probs[nuc][chrom] = 1
+							else:
+								probs[nuc][chrom] += 1
+
+		chromosome_lengths[chrom_initial] = chrom_length
 
 	# Write the resulting dictionary to the csv file
 	with open (output_file, 'w') as out:
@@ -370,8 +386,11 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 		for nuc in probs.keys():
 			print (nuc + ',', end='', file=out)
 			for chroms in chromosomes[:-1]:
-				print(str(probs[nuc][chroms]/chromosome_lengths[chroms]) + ',', end='', file=out)
-				out.flush()
+				try:
+					print(str(probs[nuc][chroms]/chromosome_lengths[chroms]) + ',', end='', file=out)
+					out.flush()
+				except:
+					print(str(0) + ',', end='', file=out)
 			print(probs[nuc][chromosomes[-1]]/chromosome_lengths[chromosomes[-1]], file=out)
 
 
@@ -386,11 +405,20 @@ def context_distribution_BED (context_input, output_file, chromosome_path, chrom
 def main():
 	bed = False
 	bed_file = None
+	exome = False
+	exome_file = None
 
 	parser = argparse.ArgumentParser(description="Provide the necessary arguments to save the nucleotide distributions for each chromosome.")
 	parser.add_argument("--genome", "-g",help="Provide a reference genome. (ex: GRCh37, GRCh38, mm10)")
 	parser.add_argument("--context", "-c",help="Whole genome context by default")
 	parser.add_argument("-b", "--bed", nargs='?', help="Optional parameter instructs script to simulate on a given set of ranges (ex: exome). Whole genome context by default")
+	parser.add_argument("-e", "--exome", nargs='?', help="Optional parameter instructs script to simulate only on exome). Whole genome context by default")
+
+    tsb_ref = {0:['N','A'], 1:['N','C'], 2:['N','G'], 3:['N','T'],
+               4:['T','A'], 5:['T','C'], 6:['T','G'], 7:['T','T'],
+               8:['U','A'], 9:['U','C'], 10:['U','G'], 11:['U','T'],
+               12:['B','A'], 13:['B','C'], 14:['B','G'], 15:['B','T'],
+               16:['N','N'], 17:['T','N'], 18:['U','N'], 19:['B','N']}
 
 	args=parser.parse_args()
 	genome = args.genome
@@ -399,27 +427,38 @@ def main():
 		bed = True
 		bed_file = args.bed
 
+	if args.exome:
+		exome = True
+		exome_file = args.exome
+
 	chromosomes = ['X', 'Y', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
 				   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
 
-	if genome.upper() == 'MM10':
+	if genome.upper() == 'MM10' or genome.upper() == 'MM9':
 		chromosomes = chromosomes[:21]
 
 	script_dir = os.getcwd()
 	ref_dir = re.sub('\/scripts$', '', script_dir)
-	chromosome_path = ref_dir + "/references/chromosomes/chrom_string/" + genome + "/"
-	chromosome_TSB_path = ref_dir + "/references/chromosomes/tsb/" + genome + "/"
+	#chromosome_path = ref_dir + "/references/chromosomes/chrom_string/" + genome + "/"
+	chromosome_path = "/Users/ebergstr/Desktop/test_bi/references/chromosomes/tsb/GRCh37/"
+	#chromosome_TSB_path = ref_dir + "/references/chromosomes/tsb/" + genome + "/"
 
 	output_path = ref_dir + '/references/chromosomes/context_distributions/'
 	if not os.path.exists(output_path):
 		os.makedirs(output_path)
 
-	output_file = ref_dir + '/references/chromosomes/context_distributions/context_distribution_' + genome + "_" + context + '.csv'
-
 	if bed:
-		context_distribution_BED(context, output_file, chromosome_path, chromosome_TSB_path, chromosomes, bed, bed_file)
+		output_file = ref_dir + '/references/chromosomes/context_distributions/context_distribution_' + genome + "_" + context + '_BED.csv'
 	else:
-		context_distribution(context, output_file, chromosome_path, chromosome_TSB_path, chromosomes)
+		if exome:
+			output_file = ref_dir + '/references/chromosomes/context_distributions/context_distribution_' + genome + "_" + context + '_exome.csv'
+		else:
+			output_file = ref_dir + '/references/chromosomes/context_distributions/context_distribution_' + genome + "_" + context + '.csv'
+
+	if bed or exome:
+		context_distribution_BED(context, output_file, chromosome_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_dir, tsb_ref)
+	else:
+		context_distribution(context, output_file, chromosome_path, chromosomes, tsb_ref)
 	
 if __name__ == '__main__':
 	main()
