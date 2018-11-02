@@ -48,7 +48,6 @@ start_run = time.time()
 
 revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N'}[B] for B in x][::-1])
 
-#@profile
 def chrom_proportions (chrom_path, genome, chromosomes):
 	'''
 	Creates a text file that contains the proportional size of each chromosome in relation to 
@@ -81,7 +80,7 @@ def chrom_proportions (chrom_path, genome, chromosomes):
 	with open (chrom_path + genome + "_proportions.txt", 'wb') as out:
 		pickle.dump(chromosomeProbs, out)
 
-#@profile
+
 def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 	'''
 	Creates a text file that contains the proportional size of each chromosome in relation to 
@@ -89,6 +88,7 @@ def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 
 	Parameters:
 		   bed_file  -> input file that contains the desired ranges
+		  chrom_path -> path to the chromosome string files
 			 genome  -> name of the genome of interest
 		chromosomes  -> list of chromosomes for the species of interest
 
@@ -135,38 +135,33 @@ def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 		pickle.dump(chromosomeProbs, out)
 
 
-
-#@profile
 def update_chromosome ( chrom, location, bases, context):
 	'''
 	Updates a given chromosome or sequence based upon a given context.
 	
 	Parameters:
-		chrom => sequence
-		location => starting position of desired update in the sequence 
-		bases => desired bases to update (del, ins, SNP, Dinuc, etc.)
-		context => simulation context (INDEL, DINUC, SNP)
+		   chrom -> sequence
+		location -> starting position of desired update in the sequence 
+		   bases -> desired bases to update (del, ins, SNP, Dinuc, etc.)
+		 context -> simulation context (INDEL, DINUC, SNP)
 	
 	Returns:
-		returns => updated chromosome
+		returns -> updated chromosome
 		
 	Example:
 		
 		update_chromosome (1.txt, 10546, 'ACG', 'Ins')
-		output => original chromosome ( ...GAAATCT...) becomes ( ...GAAA[ACG]TCT...)
+		output -> original chromosome ( ...GAAATCT...) becomes ( ...GAAA[ACG]TCT...)
 	'''
 	chromosome = chrom
 
 	if context == 'Del':
-		#chromosome = ''.join([chrom[:location], chrom[location+len(bases):]])
 		for i in range (0, len(bases), 1):
 			chromosome[location + i] = bases[i]
 	elif context == 'Ins':
-		#chromosome = ''.join([chrom[:location+1], bases, chrom[location+1:]])
 		for i in range (0, len(bases), 1):
 			chromosome[location+1+i] = bases[i]
 	elif context == 'SNP':
-		#chromosome = ''.join([chrom[:location], bases, chrom[location+1:]])
 		chromosome[location] = bases 
 
 	else:
@@ -175,7 +170,7 @@ def update_chromosome ( chrom, location, bases, context):
 			chromosome[location+i] = bases[i]
 	return(chromosome)
 
-#@profile
+
 def random_base (limit_start, limit_end):
 	'''
 	Returns a random nucleotide.
@@ -187,7 +182,7 @@ def random_base (limit_start, limit_end):
 
 	return (('ATCG')[random.randint(limit_start,limit_end)])
 
-#@profile
+
 def bed_ranges (chrom_sim, bed_file):
 	'''
 	Returns a list containing the positions corresponding with the desired
@@ -522,8 +517,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 								if nuc_count == samples[context][sample][nuc]:
 									break
 								else:
-									#l = random.randint(0,23)
-									l = fastrand.pcg32bounded(23)
+									l = random.randint(0,len(chromosomes)-1)
 									if nuc_probs[base_nuc][l] > 0:
 										random_chromosome = chromosomes[l]
 
@@ -581,7 +575,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 									break
 								else:
 									#l = random.randint(0,23)
-									l = fastrand.pcg32bounded(23)
+									l = fastrand.pcg32bounded(21)
 									random_chromosome = chromosomes[l]
 									if nuc_count < samples[context][sample][nuc]:
 										mutation_tracker[context][sample][nuc][random_chromosome] += 1
@@ -614,8 +608,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 		blah.py for details on how to create the binary file for each chromosome). 
 		
 	Parameters:
-		sample_names  -> list of all samples 
-						 (ex: sample_names = ['PDXXXX', 'PDYYYY', ...])
+		          sample_names  -> list of all samples 
+						           (ex: sample_names = ['PDXXXX', 'PDYYYY', ...])
 		
 					   samples  -> dicationary with mutation counts for each mutation type for each
 								   sample.
@@ -626,8 +620,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									'PDYYYY':{'A[A>C]A':{'X':1,'Y':3,'1':1,...},
 											 {'A[A>T]A':{'X':3,'Y':2,...}, ...}}
 		chromosome_string_path  -> path to the chromosome reference files
-		   chromosome_TSB_path  -> path to the transcriptional strand reference files for each
-								   chromosome
+		               tsb_ref  -> dictionary that allows switching from binary code to biologically relevant strings
+		           tsb_ref_rev  -> dictionary that allows switching from biologically relevant strings back to binary values
 			 simulation_number  -> desired simulation number
 				   output_path  -> output path for the simulations
 					  updating  -> single value to determine whether updating should occur. 
@@ -638,6 +632,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 					  bed_file  -> if specified by the user, the BED file with the given set of ranges. Else,
 								   it will be equal to 'None'
 					  contexts  -> desired nucleotide contexts for simulation
+					     exome  -> flag that simulates based upon the exome
+					   overlap  -> flag that allows SNV mutations and DBS mutations to overlap. By default, they will not overlap.
 
 	Returns:
 		None 
@@ -815,8 +811,13 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									# Pulls out the largest desired INDEL
 									for i in range (max(indel_lengths), 0, -1):
 										inDel = ''
-										for r in range (random_number,i+random_number,1):
-											inDel += tsb_ref[sequence[r]][1]
+										try:
+											for r in range (random_number,i+random_number,1):
+												if r > len(sequence):
+													break
+												inDel += tsb_ref[sequence[r]][1]
+										except:
+											break
 										#inDel = sequence[random_number:i+random_number]
 
 										# Ensures that all bases are known in the potential mutation
@@ -829,6 +830,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											for k in range (1, max(repeat_lengths)+1, 1):
 												seq = ''
 												for r in range(random_number+(k*i), random_number+((k+1)*i), 1):
+													if r > len(sequence):
+														break
 													seq += tsb_ref[sequence[r]][1]            
 												if seq == inDel:
 													repeat_count += 1
@@ -840,6 +843,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											for l in range (1, max(repeat_lengths)+1, 1):
 												seq = ''
 												for r in range(random_number-(l*i),(random_number-(l*i))+i, 1):
+													if r > len(sequence):
+														break
 													seq += tsb_ref[sequence[r]][1]
 												if seq == inDel:
 													repeat_count += 1
@@ -963,6 +968,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 												for k in range (1, max_repeat_length, 1):
 													seq = ''
 													for r in range (random_number+i, random_number+k+i, 1):
+														if r > len(sequence):
+															break
 														seq += tsb_ref[sequence[r]][1]
 													if seq == inDel[:k]:
 														homology_size1 += 1
@@ -974,6 +981,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 												for l in range (1, max_repeat_length, 1):
 													seq = ''
 													for r in range (random_number-l, random_number, 1):
+														if r > len(sequence):
+															break
 														seq += tsb_ref[sequence[r]][1]
 													if seq == inDel[-l:]:
 														homology_size2 += 1
@@ -1033,12 +1042,18 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 												elif mainType2 in indel_types.keys() and homology_size1 == 0:
 													seq = ''
 													for r in range (random_number+i, random_number+(2*i),1):
+														if r > len(sequence):
+															break
 														seq += tsb_ref[sequence[r]][1]
 													seq2 = ''
 													for r in range(random_number, random_number+i,1):
+														if r > len(sequence):
+															break
 														seq2 += tsb_ref[sequence[r]][1]
 													seq3 = ''
 													for r in range(random_number-i, random_number, 1):
+														if r > len(sequence):
+															break
 														seq3 += tsb_ref[sequence[r]][1]
 													if indel_types[mainType2][0] == 'Del' and seq != seq2 and seq3 != seq2:
 														if not overlap:
@@ -1095,6 +1110,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
 									potential_sequence = ''
 									for r in range (random_number, random_number + int(indels_M[1]), 1):
+										if r > len(sequence):
+											break
 										potential_sequence += tsb_ref[sequence[r]][1]
 
 									# Esnures that the region is known
@@ -1103,6 +1120,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 										# Saves the potential reverese homology sequence for reference. 
 										reverse_homology = ''
 										for r in range (random_number-int(indels_M[1]), random_number, 1):
+											if r > len(sequence):
+												break
 											reverse_homology += tsb_ref[sequence[r]][1]
 										remaining_sequence = ''
 
@@ -1126,12 +1145,18 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 										# Prints the insertion micro-hommology if the insertion length is correct and the homology matches are correct
 										seq = ''
 										for r in range(random_number-int(indels_M[1]),random_number,1):
+											if r > len(sequence):
+												break
 											seq += tsb_ref[sequence[r]][1]
 										seq2 = ''
 										for r in range (random_number+M_length+int(indels_M[1]),random_number+M_length+(2*int(indels_M[1])), 1):
+											if r > len(sequence):
+												break
 											seq2 += tsb_ref[sequence[r]][1]
 										seq3 = ''
 										for r in range(random_number,random_number+int(indels_M[1])+1,1):
+											if r > len(sequence):
+												break
 											seq3 += tsb_ref[sequence[r]][1]
 										if seq != potential_sequence[-int(indels_M[1]):] and seq2 != potential_sequence[:int(indels_M[1])] and seq3 != potential_sequence[:int(indels_M[1])+1]:
 											if not overlap:
@@ -1206,9 +1231,13 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 										# Ensures that the bases are known and that there are no repeats around the insertion
 										seq = ''
 										for r in range (random_number-int(indels_O[0]),random_number+int(indels_O[0]),1):
+											if r > len(sequence):
+												break
 											seq += tsb_ref[sequence[r]][1]
 										seq2 = ''
 										for r in range (random_number,random_number+int(indels_O[0]),1):
+											if r > len(sequence):
+												break
 											seq2 += tsb_ref[sequence[r]][1]
 										if "N" not in seq:
 											if seq2 != potential_sequence and tsb_ref[sequence[random_number-int(indels_O[0])]][1] != potential_sequence:
@@ -1260,12 +1289,6 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 							while (any(mutationsCount) == True):
 
 								# Picks a random location to throw a mutation limited to the
-								# length of the current chromosome
-								# if bed:
-								# 	location_range = len(chrom_range)
-								# else:
-								# 	location_range = len(sequence)
-
 								random_number = fastrand.pcg32bounded(location_range)
 								if bed:
 									random_number = chrom_range[random_number]
@@ -1477,19 +1500,13 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									# with the current mutation
 									if updating and bases != None:
 										bias = tsb_ref[sequence[random_number]][0]
-										# new_bases = ''
-										# for base in bases:
-										# 	new_bases += tsb_ref_rev[bias][base]
 										new_bases = ''.join([tsb_ref_rev[bias][base] for base in bases])
 										sequence = update_chromosome(sequence, random_number, new_bases, context)
 										location_range = len(sequence)
 
 				simulations -= 1
-			#print(sample, str(time.time()-start_run))
 		logging.info("Chromosome " + chrom + " done")
 		print("Chromosome " + chrom + " done")
-		#print(time.time()-start_run)
-	
 	
 	
 	
@@ -1573,7 +1590,7 @@ def main():
 			       'N':{'N':16, 'N':17, 'N':18, 'N':19}}
 
 	if species == 'mus_musculus':
-		chromosomes = chromosomes[:19]
+		chromosomes = chromosomes[:21]
 
 	time_stamp = datetime.date.today()
 
@@ -1589,42 +1606,9 @@ def main():
 
 
 	# Ensures that the chromosome strings are saves properly:
-	chromosome_string_path = "/Users/ebergstr/Desktop/test_bi/references/chromosomes/tsb/GRCh37/"
-	#chromosome_string_path = "references/chromosomes/chrom_string/" + genome + "/"
-	# chromosome_fasta_path = "references/chromosomes/fasta/" + genome + "/"
+	chromosome_string_path = "references/chromosomes/tsb/" + genome + "/"
 	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
 		print("The chromosome strings were not saved properly or have not been created yet. Rerun the SigProfilerMatrixGenerator isntall script.")
-	# 	if os.path.exists(chromosome_fasta_path) == False or len(os.listdir(chromosome_fasta_path)) <= len(chromosomes):
-	# 		print("Chromosomes are not currently saved as individual text files. You will need to download the files from your database of interest.")
-	# 		print("Ex: Ensembl-> ftp://ftp.ensembl.org/pub/grch37/update/fasta/homo_sapiens/dna/")
-	# 		print("     UCSC Genome Browser -> http://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/")
-	# 		proceed = input("Would you like to download the chromosomes for the " + genome + " assembly now?[Y/N]").upper()
-	# 		if proceed == 'Y':
-	# 			print("Downloading the chromosomes now...")
-	# 			try:
-	# 				os.system("wget -r -l1 -c -N --no-parent -A '*.dna.chromosome.*' -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
-	# 				os.system("gunzip references/chromosomes/fasta/" + genome + "/*.gz")
-	# 			except:
-	# 				proceed = input("You may not have wget or homebrew installed. Download those dependencies now?[Y/N]").upper()
-	# 				if proceed == 'Y':
-	# 					try:
-	# 						os.system("brew install wget")
-	# 					except:
-	# 						os.system('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
-	# 						os.system("brew install wget")
-	# 						os.system("wget -r -l1 -c -N --no-parent -A '*.dna.chromosome.*' -nd -P " + chromosome_fasta_path + " ftp://ftp.ensembl.org/pub/release-93/fasta/"+species+"/dna/")
-	# 						os.system("gunzip references/chromosomes/fasta/" + genome + "/*.gz")
-	# 						print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
-	# 				else:
-	# 					print("Simulation has stopped. Please download the chromosome files before proceeding with the simulations.")
-	# 					sys.exit()
-	# 		else:
-	# 			print("Simulatoin has stopped. Please download the chromosome files before proceeding with the simulations.")
-	# 			sys.exit()
-
-	# 	print("Chromosome fasta files for " + genome + " have been installed. Creating the chromosome string files now...")
-	# 	os.system("python3 scripts/save_chrom_strings.py -g " + genome)
-	# 	print("Chromosome string files have been created. Continuing with simulations.")
 
 
 	# Ensures that the chromosome proportions are saved 
@@ -1700,20 +1684,6 @@ def main():
 					print("Simulation has stopped. Please create the catalogue file before continuing with simulations.")
 					sys.exit()
 		os.chdir(parent_dir)
-
-	# Ensures that the transcriptional strand reference files are saved properly
-	#chromosome_TSB_path = "references/chromosomes/tsb/" + genome + "/"
-	# transcript_files = "references/chromosomes/transcripts/" + genome + "/"
-	# if len(os.listdir(transcript_files)) < 1 or os.path.exists(transcript_files) == False:
-	# 	print("Please download the transcript files before proceeding. You can download the files from 'http://www.ensembl.org/biomart/martview'.")
-	# 	print("Follow the format presented in the README file:\n\n\tGene stable ID  Transcript stable ID    Chromosome/scaffold name    Strand  Transcript start (bp)   Transcript end (bp)")
-	# 	sys.exit()
-	#if os.path.exists(chromosome_TSB_path) == False or len(os.listdir(chromosome_TSB_path)) < len(chromosomes):
-	#	print("The transcriptional strand reference files are not saved or were not generated properly. Please rerun the SigProfilerMatrixGenerator install script." )
-	# 	proceed = input("The transcriptional data has not been saved. Would you like to run the script now? [Y/N]").upper()
-	# 	if proceed == 'Y':
-	# 		print("Proceeding...")
-	# 		os.system("python3 scripts/save_tsb_192.py -g " + genome)
 
 	# Esnures that the nucleotide context files are saved properly
 	nucleotide_context_files = {}
