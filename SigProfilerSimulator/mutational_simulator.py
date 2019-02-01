@@ -105,14 +105,15 @@ def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 	first_line = True
 	length = 0
 	total = 0
-	with open ("references/vcf_files/BED/" + bed_file) as f:
+	with open (bed_file) as f:
 		next(f)
 		for lines in f:
 			line = lines.strip().split()
 			chrom = line[0]
+			if len(chrom) > 2:
+				chrom = chrom[3:]
 			start = int(line[1])
 			end = int(line[2])
-
 			if first_line:
 				chrom_initial = chrom
 				first_line = False
@@ -120,14 +121,18 @@ def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 
 			if chrom == chrom_initial:
 				length += end-start
-				total += length
+				#total += length
 			else:
+				print(chrom_initial)
+				total += length
 				chromosome_lengths[chrom_initial] = length
 				chrom_initial = chrom
 				length = end-start
 				total_length += length
 		chromosome_lengths[chrom_initial] = length
 
+	print(chromosome_lengths)
+	print(total)
 	for chroms in chromosomes:
 		chromosomeProbs.append(chromosome_lengths[chroms]/total_length)
 
@@ -490,9 +495,14 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 					if sample not in mutation_tracker[context]:
 						mutation_tracker[context][sample] = {nuc:{}}
 
+
+
 					# Allocates mutations proportionaly based upon the context
 					# distributions
 					for chroms in chromosomes:
+						if chrom_index == 1:
+							chrom_index += 1
+							
 						try:
 							mutation_count = int(samples[context][sample][nuc]) * nuc_probs[base_nuc][chrom_index]
 						except:
@@ -1521,6 +1531,8 @@ def main():
 	indel = False
 	signature_sim = False
 	overlap = False
+	gender = 'male'
+
 
 	parser = argparse.ArgumentParser(description="Provide the necessary arguments to begin simulations.")
 	parser.add_argument("--project", "-p",help="Provide a unique name for your samples. (ex: BRCA)")
@@ -1533,6 +1545,7 @@ def main():
 	parser.add_argument("-i", "--indel", help="Optional parameter instructs script to simulate INDELs without considering insertions at microhomologies.", action='store_true')
 	parser.add_argument("-S", "--Signatures",  help="Optional parameter instructs script to simulate based upon a set of signatures and their activities.", action='store_true')
 	parser.add_argument("-ol", "--overlap",  help="Optional parameter instructs script to allow mutations to overlap during the simulations.", action='store_true')
+	parser.add_argument("-gD", "--gender", help="Optional parameter instructs script to create the context files based on female (two x chromosomes.", action='store_true')
 
 
 	args=parser.parse_args()
@@ -1567,7 +1580,7 @@ def main():
 	species = None
 	if genome.upper() == 'GRCH37' or genome.upper() == 'GRCH38': 
 		species = "homo_sapiens"
-	elif genome.upper() == 'MM10': 
+	elif genome.upper() == 'MM10' or genome.upper() == 'MM9': 
 		species = "mus_musculus"
 	else:
 		print(genome + " is not supported. The following genomes are supported:\nGRCh37, GRCh38, mm10")
@@ -1576,6 +1589,11 @@ def main():
 
 	chromosomes = ['X', 'Y', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
 				   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
+
+	# chromosomes = ['X', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
+	# 			   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
+
+
 
 	tsb_ref = {0:['N','A'], 1:['N','C'], 2:['N','G'], 3:['N','T'],
 			   4:['T','A'], 5:['T','C'], 6:['T','G'], 7:['T','T'],
@@ -1591,6 +1609,11 @@ def main():
 
 	if species == 'mus_musculus':
 		chromosomes = chromosomes[:21]
+
+	if args.gender:
+		gender = 'female'
+		chromosomes.remove('Y')
+
 
 	time_stamp = datetime.date.today()
 
@@ -1622,7 +1645,7 @@ def main():
 		chromosomeProbs = chrom_proportions_BED(bed_file, chromosome_string_path, genome, chromosomes)
 	if exome:
 		print("Creating a chromosome proportion file for the exome...")
-		bed_file = "references/chromosomes/exome/" + genome + "/GRCh37_exome.interval_list"
+		bed_file = "references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
 		chromosomeProbs = chrom_proportions_BED(bed_file, chromosome_string_path, genome, chromosomes)
 
 

@@ -1,0 +1,13 @@
+MANIFEST.in
+README.md
+README_simulator.pdf
+setup.py
+SigProfilerSimulator/SigProfilerSimulator.py
+SigProfilerSimulator/__init__.py
+SigProfilerSimulator/mutational_simulator.py
+SigProfilerSimulator.egg-info/PKG-INFO
+SigProfilerSimulator.egg-info/SOURCES.txt
+SigProfilerSimulator.egg-info/dependency_links.txt
+SigProfilerSimulator.egg-info/not-zip-safe
+SigProfilerSimulator.egg-info/requires.txt
+SigProfilerSimulator.egg-info/top_level.txt
