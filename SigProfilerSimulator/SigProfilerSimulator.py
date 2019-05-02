@@ -95,7 +95,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	############################## Pre-simulation Checks ##################################################################################################
 	# Ensures that the chromosome strings are saves properly:
-	chromosome_string_path = matRef.reference_paths(genome)
+	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
 	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
 		print("The chromosome strings were not saved properly or have not been created yet. Rerun the SigProfilerMatrixGenerator isntall script.")
 
@@ -210,7 +210,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		sim = 3
 		mut_start = 2
 		mut_save = 3
-	elif context == '192':
+	elif context == '192' or context == '384':
 		sim = 4 
 		mut_start = 1
 		mut_save = 4

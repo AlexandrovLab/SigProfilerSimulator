@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='SigProfilerSimulator',
-		version='0.1.7',
+		version='0.1.9',
 		description='SigProfiler simulator tool',
 		url='',
 		author='Erik Bergstrom',

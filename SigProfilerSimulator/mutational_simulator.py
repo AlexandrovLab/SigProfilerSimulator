@@ -16,6 +16,7 @@ import argparse
 import logging
 import datetime
 import shutil
+from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGenerator as matRef
 
 
 start_run = time.time()
@@ -25,6 +26,7 @@ start_run = time.time()
 
 
 revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N'}[B] for B in x][::-1])
+revbias = lambda x: ''.join([{'0':'0', '3':'3', '1':'2','2':'1','U':'T','T':'U','B':'B','N':'N'}[B] for B in x][::-1])
 
 def chrom_proportions (chrom_path, genome, chromosomes):
 	'''
@@ -672,7 +674,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 		# Only for TSB simulations, opens the transcriptional info strings:
 		chrom_bias = {'T':[],'U':[],'B':[],'N':[]}
 		if '192' in contexts or '3072' in contexts or '384' in contexts or '6144' in contexts:
-			with open ('references/chromosomes/tsb_BED/GRCh37/' + chrom + "_BED_TSB.txt") as f:
+			chromosome_string_path, ref_dir = matRef.reference_paths(genome)
+			with open (ref_dir + '/references/chromosomes/tsb_BED/GRCh37/' + chrom + "_BED_TSB.txt") as f:
 				next(f)
 				for lines in f:
 					line = lines.strip().split()
@@ -1412,14 +1415,14 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\t.\tSimulations\t",genome,"\t",revcompl(revCompMutNuc),"\t","-1"]), file=out)
 											if seqInfo:
 												revCompMutNuc_seq = revcompl(''.join([tsb_ref[base][1] for base in sequence[random_number - 2:random_number + 3]]))
-												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",revcompl(revCompMutNuc_seq)[0:2],"[",revcompl(nuc_keys[nucIndex][mut_save]),">",revcompl(nuc_keys[nucIndex][mut_save+2]),"]",revcompl(revCompMutNuc_seq)[3:], "\t","-1"]), file=outSeq)
+												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",revCompMutNuc_seq[0:2],"[",nuc_keys[nucIndex][mut_save],">",nuc_keys[nucIndex][mut_save+2],"]",revCompMutNuc_seq[3:], "\t","-1"]), file=outSeq)
 										elif sim == 5:
 											context_up = 'DBS'
 											bases = revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5])
 											#print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", nuc_keys[nucIndex][mut_save:mut_save+2],"\t",nuc_keys[nucIndex][mut_save+3:mut_save+5],"\t.\tSimulations\t",genome,"\t",revCompMutNuc,"\t","-1"]), file=out)
 											print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", revcompl(nuc_keys[nucIndex][mut_save:mut_save+2]),"\t",revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5]),"\t.\tSimulations\t",genome,"\t",revcompl(revCompMutNuc),"\t","-1"]), file=out)
 											if seqInfo:
-												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",revcompl(nuc_keys[nucIndex][mut_save:mut_save+2]),">",revcompl(nuc_keys[nucIndex][mut_save+3:mut_save+5]), "\t","-1"]), file=outSeq)
+												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",nuc_keys[nucIndex][mut_save:mut_save+2],">",nuc_keys[nucIndex][mut_save+3:mut_save+5], "\t","-1"]), file=outSeq)
 
 										mutationsCount[nuc_keys[nucIndex]] -= 1
 										if mutationsCount[nuc_keys[nucIndex]] == 0:
@@ -1452,10 +1455,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									base_keys[nuc[0]].append(nuc[0] + nuc[2] + nuc[4] + nuc[8])
 								elif sim == 7:
 									base_keys[nuc[0]].append(nuc[0] + nuc[2:4] + nuc[5] + nuc[9:])
-							
 							# Simulates until all mutations have been assigned.
 							for tsb_type in tsb:
-								#l = 0 
+								l = 0 
 								while (any(mutationsCountTSB[tsb_type]) == True):
 
 									# Picks a random location to throw a mutation limited to the
@@ -1481,10 +1483,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									# If a specific mutation cannot be assinged after x iterations,
 									# skip that nucleotide context. Helps to prevent the simulation from
 									# stalling on a rare/non-existent mutation
-									# l += 1
-									# if l > 1000000:
-									# 	logging.info(sample + " " + mutationsCount)
-									# 	print (sample, mutationsCount)
+									l += 1
+									if l > 1000000:
+										logging.info(sample + " ")# + mutationsCount)
 										if sample not in left_over_mutations.keys():
 											left_over_mutations[sample] = {}
 											left_over_mutations[sample][simulations] = {context:None}
@@ -1496,6 +1497,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 												left_over_mutations[sample][simulations][context] = mutationsCount
 
 										mutationsCount = {}
+										l = 0
 									#mutNuc = None
 									#revCompMutNuc = None
 						
@@ -1505,13 +1507,12 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									# for r in range(random_number - mut_start,random_number + mut_start+1,1):
 									# 	mutNuc += tsb_ref[sequence[r]][1]
 									mutNuc = ''.join([tsb_ref[base][1] for base in sequence[random_number - mut_start:random_number + mut_start+1]])
-									#mutNuc = nuc_bias + sequence[random_number - mut_start:random_number + mut_start+1]
-									revCompMutNuc = nuc_bias + revcompl(mutNuc[1:])      
+									mutNuc = nuc_bias + mutNuc #+ sequence[random_number - mut_start:random_number + mut_start+1]
+									revCompMutNuc = revbias(nuc_bias) + revcompl(mutNuc[1:])      
 									
 									# If the nucleotide is desired (present in the mutation dictionary), write
 									# it to the output file and update the dictionary
 									bases = None
-									context = None
 									if mutNuc in base_keys[tsb_type]:
 										nucIndex = base_keys[tsb_type].index(mutNuc)
 										if nuc_keys[nucIndex] in mutationsCountTSB[tsb_type].keys() and mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] != 0:		
@@ -1520,7 +1521,8 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", nuc_keys[nucIndex][mut_save],"\t",nuc_keys[nucIndex][mut_save+2],"\t.\tSimulations\t",genome,"\t",mutNuc,"\t","+1"]), file=out)
 											if seqInfo:
 												mutNuc_seq = ''.join([tsb_ref[base][1] for base in sequence[random_number - 2:random_number + 3]])
-												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",mutNuc_seq[0:2],"[",nuc_keys[nucIndex][mut_save],">",nuc_keys[nucIndex][mut_save+2],"]",mutNuc_seq[3:], "\t","+1"]), file=outSeq)
+												mutNuc_seq = nuc_bias + ":" + mutNuc_seq
+												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",mutNuc_seq[0:4], "[",nuc_keys[nucIndex][mut_save],">",nuc_keys[nucIndex][mut_save+2],"]",mutNuc_seq[5:], "\t","+1"]), file=outSeq)
 											
 											mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] -= 1
 											if mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] == 0:
@@ -1536,11 +1538,12 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 											context_up = 'SNP'
 											bases = revcompl(nuc_keys[nucIndex][mut_save+2])
 											#print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\t.\tSimulations\t",genome,"\t",revCompMutNuc,"\t","-1"]), file=out)
-											print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\t.\tSimulations\t",genome,"\t",revcompl(revCompMutNuc),"\t","-1"]), file=out)
+											print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", revcompl(nuc_keys[nucIndex][mut_save]),"\t",revcompl(nuc_keys[nucIndex][mut_save+2]),"\t.\tSimulations\t",genome,"\t",revcompl(revCompMutNuc[1:]),"\t","-1"]), file=out)
 											if seqInfo:
-												revCompMutNuc_seq = revcompl(''.join([tsb_ref[base][1] for base in sequence[random_number - 2:random_number + 3]]))
-												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",recompl(revCompMutNuc_seq)[0:2],"[",revcompl(nuc_keys[nucIndex][mut_save]),">",revcompl(nuc_keys[nucIndex][mut_save+2]),"]",revcompl(revCompMutNuc_seq)[3:], "\t","-1"]), file=outSeq)
-											
+												revCompMutNuc_seq = revbias(nuc_bias) + ":" + revcompl(''.join([tsb_ref[base][1] for base in sequence[random_number - 2:random_number + 3]]))
+												#print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",nuc_bias,":",revcompl(revCompMutNuc_seq[2:])[0:2],"[",revcompl(nuc_keys[nucIndex][mut_save]),">",revcompl(nuc_keys[nucIndex][mut_save+2]),"]",revcompl(revCompMutNuc_seq[2:])[3:], "\t","-1"]), file=outSeq)
+												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",revCompMutNuc_seq[0:4],"[",nuc_keys[nucIndex][mut_save],">",nuc_keys[nucIndex][mut_save+2],"]",revCompMutNuc_seq[5:], "\t","-1"]), file=outSeq)
+
 											mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] -= 1
 											if mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] == 0:
 												del mutationsCountTSB[tsb_type][nuc_keys[nucIndex]]
