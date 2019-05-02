@@ -1,28 +1,5 @@
 #!/usr/bin/env python3
 
-#This file is part of Mutational Signatures Project.
-
-#Mutational Signatures Project: need info on project
-
-#Copyright (C) 2018 Erik Bergstrom
-
-#
-
-#Mutational Signatures is free software: need to include distribtution
-
-#rights and so forth
-
-#
-
-#Mutational Signatures is distributed in the hope that it will be useful,
-
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-
-#GNU General Public License for more details [change to whatever group we should include.
- 
-
 #Author: Erik Bergstrom
 
 #Contact: ebergstr@eng.ucsd.edu
@@ -48,7 +25,7 @@ from SigProfilerMatrixGenerator.scripts import save_context_distribution as cont
 start_run = time.time()
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, Signatures=False, overlap=False, gender='male'):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, Signatures=False, overlap=False, gender='male', seqInfo=False):
 	'''
 	contexts -> [] must be a list
 	'''
@@ -85,12 +62,11 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			   12:['B','A'], 13:['B','C'], 14:['B','G'], 15:['B','T'],
 			   16:['N','N'], 17:['T','N'], 18:['U','N'], 19:['B','N']}
 
-	tsb_ref_rev = {'N':{'A':0, 'C':1, 'G':2, 'T':3},
-			   	   'T':{'A':4, 'C':5, 'G':6, 'T':7},
-			       'U':{'A':8, 'C':9, 'G':10, 'T':11},
-			       'B':{'A':12, 'C':13, 'G':14, 'T':15},
-			       'N':{'N':16, 'N':17, 'N':18, 'N':19}}
-
+	tsb_ref_rev = {'N':{'A':0, 'C':1, 'G':2, 'T':3, 'N':16},
+			   	   'T':{'A':4, 'C':5, 'G':6, 'T':7, 'N':17},
+			       'U':{'A':8, 'C':9, 'G':10, 'T':11, 'N':18},
+			       'B':{'A':12, 'C':13, 'G':14, 'T':15, 'N':19}}
+			       
 	if species == 'mus_musculus':
 		chromosomes = chromosomes[:21]
 
@@ -135,18 +111,19 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	# Ensures that the mutational matrices exist:
 	catalogue_files = {}
-	matrix_path = project_path + "output/"
+	
 	#matrix_path = "references/matrix/" + project + "/"
 	for context in contexts:
+		matrix_path = project_path + "output/"
 		#matrix_path = matrix_path + context + "/"
-		if context == 'DINUC':
-			context_folder = 'DINUC'
+		if context == 'DINUC' or context == 'DBS':
+			context_folder = 'DBS'
 			matrix_path = matrix_path + context_folder + "/"
 			file_name = ".DBS78"
-		elif context == 'INDEL':
-			context_folder = 'INDEL'
+		elif context == 'INDEL' or context == 'ID':
+			context_folder = 'ID'
 			matrix_path = matrix_path + context_folder + "/"
-			file_name = '.INDEL83'
+			file_name = '.ID83'
 		else:
 			context_folder = 'SBS'
 			matrix_path = matrix_path + context_folder + "/"
@@ -192,7 +169,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 		nucleotide_context_files[context] = nucleotide_context_file
 
-		if os.path.exists(nucleotide_context_file) == False and context != 'INDEL':
+		if os.path.exists(nucleotide_context_file) == False and (context != 'INDEL' and context != 'ID'):
 			print("The context distribution file does not exist. This file needs to be created before simulating. This may take several hours...")
 			if bed:
 				output_file = ref_path + 'context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '_BED.csv'
@@ -237,11 +214,11 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		sim = 4 
 		mut_start = 1
 		mut_save = 4
-	elif context == 'DINUC':
+	elif context == 'DINUC' or context == 'DBS':
 		sim = 5
 		mut_start = 0
 		mut_save = 0
-	elif context == 'INDEL':
+	elif context == 'INDEL' or context == 'ID':
 		sim = 6
 		mut_save = 0
 		mut_start = 0
@@ -259,7 +236,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		mut_prep = simScript.mutation_preparation(catalogue_files)
 	reference_sample = mut_prep[0][0]
 	mut_dict = simScript.mut_tracker(mut_prep[0], mut_prep[1], reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed_file)
-	simScript.simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap)
+	simScript.simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo)
 	end_run = time.time()
 	run_time = end_run - start_run
 	logging.info("Simulation completed\nJob took " + str(run_time) + " seconds")
