@@ -727,6 +727,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
 				with open(outputFile, "a", 10000000) as out:
 					for context in contexts:
+						if seqInfo:
+							outSeq = open(seqOut_path + context + "/" + chrom + "_seqinfo_" + str(simulations) + ".txt", "a", 100000000) 
+
 						sim = None
 						mut_start = None
 						mut_length = None

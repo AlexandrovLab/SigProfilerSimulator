@@ -1,2 +1,2 @@
-SigProfilerMatrixGenerator>=0.1.22
-sigProfilerPlotting>=0.1.19
+SigProfilerMatrixGenerator>=1.0.0
+sigProfilerPlotting>=1.0.1
