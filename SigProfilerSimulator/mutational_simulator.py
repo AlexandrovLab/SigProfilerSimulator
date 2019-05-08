@@ -910,9 +910,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 													for r in range (random_number-1,i+random_number,1):
 														seq_final += tsb_ref[sequence[r]][1]
 													#print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\tSOMATIC\t", complete_indel]), file=out)
-													print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
+													print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
 													if seqInfo:
-														print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
+														print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
 
 													if not overlap:
 														for z in range (random_number-1, random_number+i+1,1):
@@ -955,9 +955,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 													for r in range (random_number-1, i+random_number,1):
 														seq_final += tsb_ref[sequence[r]][1]
 													#print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\tSOMATIC\t",complete_indel]), file=out)
-													print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
+													print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
 													if seqInfo:
-														print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
+														print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
 
 													if not overlap:
 														for z in range (random_number-1, random_number+i+1,1):
@@ -1044,9 +1044,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 														for r in range(random_number-1,i+random_number,1):
 															seq_final += tsb_ref[sequence[r]][1]
 														#print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\tSOMATIC\t", complete_indel]), file=out)
-														print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
+														print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
 														if seqInfo:
-															print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
+															print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
 														
 														if not overlap:
 															for z in range (random_number-1, random_number+i+1,1):
@@ -1101,9 +1101,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 														for r in range (random_number-1,i+random_number,1):
 															seq_final += tsb_ref[sequence[r]][1]
 														#print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+i+1),"\t",seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\tSOMATIC\t", complete_indel]), file=out)
-														print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
+														print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
 														if seqInfo:
-															print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
+															print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
 														
 														if not overlap:
 															for z in range (random_number-1, random_number+i+1,1):
@@ -1202,9 +1202,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 												break
 
 											#print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+M_length+1),"\t",tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\tSOMATIC\t",complete_indel]), file=out)
-											print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
+											print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
 											if seqInfo:
-												print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
+												print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
 											
 											if not overlap:
 												for z in range (random_number-1, random_number+M_length+1,1):
@@ -1287,9 +1287,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 													break
 													
 												#print (''.join([project,"\t",sample,"\tSimulation\t",genome,"\tINDEL\t",chrom,"\t",str(random_number+1),"\t",str(random_number+int(indels_O[0])+1),"\t",tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\tSOMATIC\t", complete_indel]), file=out)
-												print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
+												print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\t.\tSimulations\t",genome,"\t",complete_indel,"\t","+1"]), file=out)
 												if seqInfo:
-													print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
+													print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", "+1"]), file=outSeq)
 												
 												if not overlap:
 													for z in range (random_number-1, random_number+int(indels_O[0])+1,1):
