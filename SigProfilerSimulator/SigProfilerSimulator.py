@@ -15,6 +15,7 @@ import subprocess
 import argparse
 import logging
 import datetime
+import multiprocessing as mp
 from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGenerator as matRef
 from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGeneratorFunc as matGen
 #import mutational_simulator_with_range_option_simulate_multiple_at_once_sig_option_192_alternate_io_buffering_new_update_bi_Y as simScript
@@ -25,7 +26,7 @@ from SigProfilerMatrixGenerator.scripts import save_context_distribution as cont
 start_run = time.time()
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, Signatures=False, overlap=False, gender='male', seqInfo=False):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, Signatures=False, overlap=False, gender='female', seqInfo=False, chrom_based=False):
 	'''
 	contexts -> [] must be a list
 	'''
@@ -111,6 +112,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	# Ensures that the mutational matrices exist:
 	catalogue_files = {}
+	if Signatures:
+		signature_files = {}
 	
 	#matrix_path = "references/matrix/" + project + "/"
 	for context in contexts:
@@ -128,6 +131,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			context_folder = 'SBS'
 			matrix_path = matrix_path + context_folder + "/"
 			file_name = '.SBS' + context
+
 		if exome:
 			catalogue_file = matrix_path + project + file_name + '.exome'
 		else:
@@ -136,6 +140,9 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			else:
 				catalogue_file = matrix_path + project + file_name + '.all'
 	
+		if Signatures:
+			signature_files[context] = ref_dir + "/references/chromosomes/context_distributions/context_distribution_signatures_" + context + ".txt"
+
 		catalogue_files[context] = catalogue_file
 
 		vcf_files_1 = project_path
@@ -230,13 +237,36 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 
 	############################## Begin the simulation process ##################################################################################################
-	if Signatures:
-		mut_prep = simScript.mutation_preparation_sig(catalogue_files)
+	if chrom_based:
+		sample_names, mut_prep, mut_dict = simScript.mutation_preparation_chromosomes(catalogue_files, matrix_path, chromosomes, project)
+		reference_sample = sample_names[0]
 	else:
-		mut_prep = simScript.mutation_preparation(catalogue_files)
-	reference_sample = mut_prep[0][0]
-	mut_dict = simScript.mut_tracker(mut_prep[0], mut_prep[1], reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed_file)
-	simScript.simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo)
+		if Signatures:
+			sample_names, mut_prep = simScript.mutation_preparation_sig(signature_files, catalogue_files)
+		else:
+			sample_names, mut_prep = simScript.mutation_preparation(catalogue_files)
+		reference_sample = sample_names[0]
+		mut_dict = simScript.mut_tracker(sample_names,  mut_prep, reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed_file)
+	
+	# Set-up parallelization:
+	processors = mp.cpu_count()
+	pool = mp.Pool(processors)
+
+	chrom_break = len(chromosomes)/processors
+	chromosomes_parallel = [[] for i in range(processors)]
+
+	chrom_bin = 0
+	for chrom in chromosomes:
+		if chrom_bin == processors:
+			chrom_bin = 0
+		chromosomes_parallel[chrom_bin].append(chrom)
+		chrom_bin += 1
+
+	[pool.apply_async(simScript.simulator, args=(sample_names,  mut_prep, mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, output_path, updating, chroms, project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo)) for chroms in chromosomes_parallel]
+
+	#simScript.simulator(sample_names,  mut_prep, mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo)
+	pool.close()
+	pool.join()
 	end_run = time.time()
 	run_time = end_run - start_run
 	logging.info("Simulation completed\nJob took " + str(run_time) + " seconds")

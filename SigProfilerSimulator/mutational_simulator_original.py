@@ -219,72 +219,6 @@ def bed_ranges (chrom_sim, bed_file):
 	chrom_range.sort()
 	return(chrom_range)
 
-
-def mutation_preparation_chromosomes (catalogue_files, matrix_path, chromosomes, project):
-	sample_names = []
-	samples = dict()
-	mutation_tracker = {}
-	for context in catalogue_files:
-		mutation_tracker[context] = {}
-		with open (catalogue_files[context]) as f:
-			first_line = f.readline().strip().split('\t')
-		sample_names += first_line[1:]
-		samples[context] = {}
-		current_samples = first_line[1:]
-
-		# Save the mutation counts for each sample for each nucleotide context
-		with open (catalogue_files[context]) as f:
-			next(f)
-			for lines in f:
-				line = lines.strip().split()
-				nuc = line[0]
-				if nuc == 'complex' or nuc == 'non-matching':
-					continue
-
-				sample_index = 1
-				#sample_index = 5
-				for sample in current_samples:
-					mutCount = int(line[sample_index])
-					if sample not in samples[context]:
-						samples[context][sample] = {nuc:mutCount}
-					else:
-						samples[context][sample][nuc] = int(mutCount)
-					sample_index += 1  
-		for chrom in chromosomes:
-			with open(catalogue_files[context] + ".chr" + chrom) as f:
-				next(f)
-				for lines in f:
-					line = lines.strip().split()
-					nuc = line[0]
-					if nuc == 'complex' or nuc == 'non-matching':
-						continue
-
-					sample_index = 1
-					#sample_index = 5
-					for sample in current_samples:
-						mutCount = int(line[sample_index])
-						if sample not in mutation_tracker[context]:
-							mutation_tracker[context][sample] = {nuc:{}}
-							for chromo in chromosomes:
-								mutation_tracker[context][sample][nuc][chromo] = 0
-							mutation_tracker[context][sample][nuc][chrom] = int(mutCount)
-						else:
-							if nuc not in mutation_tracker[context][sample]:
-								mutation_tracker[context][sample][nuc] = {}
-								for chromo in chromosomes:
-									mutation_tracker[context][sample][nuc][chromo] = 0
-
-							mutation_tracker[context][sample][nuc][chrom] = int(mutCount)
-						sample_index += 1  
-
-
-	sample_names = list(set(sample_names))
-	logging.info("Files successfully read and mutations collected. Mutation assignment starting now.")
-	print("Files successfully read and mutations collected. Mutation assignment starting now.")
-	return (sample_names, samples, mutation_tracker)
-
-#mutation_tracker[context][sample][nuc][chroms] = mutation_count
-
 #@profile
 def mutation_preparation (catalogue_files):
 	'''
@@ -311,7 +245,7 @@ def mutation_preparation (catalogue_files):
 	# Obtains all of the samples of interest from the input file
 	sample_names = []
 	samples = dict()
-	for context in catalogue_files:
+	for context in catalogue_files.keys():
 		with open (catalogue_files[context]) as f:
 			first_line = f.readline().strip().split('\t')
 		sample_names += first_line[1:]
@@ -784,6 +718,7 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 							chrom_bias_lengths['B'].append(end-start)
 						else:
 							chrom_bias_lengths['B'].append(chrom_bias_lengths['B'][-1] + (end-start))
+			print(chrom_bias_lengths['T'][-1] + chrom_bias_lengths['U'][-1] + chrom_bias_lengths['N'][-1] + chrom_bias_lengths['B'][-1])
 
 		for sample in sample_names:
 			# Saves an unaltered chromosome, so that future updating of mutations
@@ -860,11 +795,9 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 
 							if any(left_over_mutations[sample][simulations]):
 								for nuc in left_over_mutations[sample][simulations][context]:
-									try:
-										mutationsCount[nuc] += left_over_mutations[sample][simulations][context][nuc]
-									except:
-										mutationsCount[nuc] = left_over_mutations[sample][simulations][context][nuc]
-									left_over_mutations[sample][simulations][context][nuc] = {}
+
+									mutationsCount[nuc] += left_over_mutations[sample][simulations][context][nuc]
+									left_over_mutations[sample][simulations][context] = {}
 
 						initial_nuc_keys = list(mutationsCount.keys())
 						for nuc in initial_nuc_keys:
@@ -1571,24 +1504,15 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									#if bed:
 									#	location_range = len(chrom_range)
 									if not bed:
-										location_range = chrom_bias_lengths[tsb_type][-1]
+										location_range = len(chrom_bias[tsb_type])
 									#random_number = random.randint(0, location_range-1)
 									random_range = fastrand.pcg32bounded(location_range)
+									if chrom_bias[tsb_type][random_range][1]-chrom_bias[tsb_type][random_range][0] != 0:
+										random_number = fastrand.pcg32bounded(chrom_bias[tsb_type][random_range][1]-chrom_bias[tsb_type][random_range][0])
+									else:
+										random_number = chrom_bias[tsb_type][random_range][1]
 
-									specific_range = bisect.bisect_left(chrom_bias_lengths[tsb_type], random_range)
-
-
-									random_number = (chrom_bias_lengths[tsb_type][specific_range] - random_range) + chrom_bias[tsb_type][specific_range][0]
-
-
-
-
-									# if chrom_bias[tsb_type][random_range][1]-chrom_bias[tsb_type][random_range][0] != 0:
-									# 	random_number = fastrand.pcg32bounded(chrom_bias[tsb_type][random_range][1]-chrom_bias[tsb_type][random_range][0])
-									# else:
-									# 	random_number = chrom_bias[tsb_type][random_range][1]
-
-									# random_number += chrom_bias[tsb_type][random_range][0]
+									random_number += chrom_bias[tsb_type][random_range][0]
 
 									if bed:
 										random_number = chrom_range[random_number]
@@ -1600,37 +1524,24 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 									# stalling on a rare/non-existent mutation
 									l += 1
 									if l > 1000000:
-										logging.info(sample + " " + tsb_type )# + mutationsCount)
-										print(mutationsCountTSB[tsb_type])
+										logging.info(sample + " ")# + mutationsCount)
 										if sample not in left_over_mutations.keys():
 											left_over_mutations[sample] = {}
-											left_over_mutations[sample][simulations] = {context:{}}
-											for nuc in mutationsCountTSB[tsb_type]:
-												left_over_mutations[sample][simulations][context][nuc] = mutationsCountTSB[tsb_type][nuc]
-											#left_over_mutations[sample][simulations][context] = mutationsCountTSB[tsb_type][nuc_keys[nucIndex]] -= 1
+											left_over_mutations[sample][simulations] = {context:None}
+											left_over_mutations[sample][simulations][context] = mutationsCount
 										else:
 											if simulations not in left_over_mutations[sample].keys():
-												left_over_mutations[sample][simulations] = {}
-												left_over_mutations[sample][simulations] = {context:{}}
-												for nuc in mutationsCountTSB[tsb_type]:
-													left_over_mutations[sample][simulations][context][nuc] = mutationsCountTSB[tsb_type][nuc]
-												#left_over_mutations[sample][simulations] = {context:mutationsCount}
+												left_over_mutations[sample][simulations] = {context:mutationsCount}
 											else:
-												for nuc in mutationsCountTSB[tsb_type]:
-													left_over_mutations[sample][simulations][context][nuc] = mutationsCountTSB[tsb_type][nuc]
+												left_over_mutations[sample][simulations][context] = mutationsCount
 
-										mutationsCountTSB[tsb_type] = {}
-										#mutationsCount = {}
+										mutationsCount = {}
 										l = 0
 									#mutNuc = None
 									#revCompMutNuc = None
 						
 									# Only for TSB simulations: organizes nucleotide references
 									nuc_bias = tsb_type
-									#print(random_number)
-									#actual_bias = tsb_ref[sequence[random_number-1]][0]
-									#if actual_bias != nuc_bias:
-									#	print(random_number, random_range, specific_range, sequence[random_number-1], tsb_ref[sequence[random_number-1]][0], tsb_ref[sequence[random_number-1]][1], actual_bias, nuc_bias)
 									# mutNuc = ''
 									# for r in range(random_number - mut_start,random_number + mut_start+1,1):
 									# 	mutNuc += tsb_ref[sequence[r]][1]
@@ -1692,3 +1603,272 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 		logging.info("Chromosome " + chrom + " done")
 		print("Chromosome " + chrom + " done")
 	
+	
+	
+def main():
+	#############################Organize Files, Data, and Inputs#############################
+	simulation_number = 1
+	updating = False
+	exome = False
+	bed = False
+	bed_file = None
+	limited_indel = False
+	indel = False
+	signature_sim = False
+	overlap = False
+	gender = 'male'
+
+
+	parser = argparse.ArgumentParser(description="Provide the necessary arguments to begin simulations.")
+	parser.add_argument("--project", "-p",help="Provide a unique name for your samples. (ex: BRCA)")
+	parser.add_argument("--genome", "-g",help="Provide a reference genome. (ex: GRCh37, GRCh38, mm10)")
+	parser.add_argument("--context", "-c", nargs='*', help="Provide the nucleotide context (ex: 96, 192, 1536, 3072, INDEL, DINUC).")
+	parser.add_argument("-e", "--exome", help="Optional parameter instructs script to create the catalogues using only the exome regions. Whole genome context by default", action='store_true')
+	parser.add_argument("-s", "--simulations", nargs='?', help="Provide the number of simulations per sample. The defualt is 1 simulation per sample.")
+	parser.add_argument("-u", "--update", help="Optional parameter. Determines whether the chromosomes are updated with the current mutation.", action='store_true')
+	parser.add_argument("-b", "--bed", nargs='?', help="Optional parameter instructs script to simulate on a given set of ranges (ex: exome). Whole genome context by default")
+	parser.add_argument("-i", "--indel", help="Optional parameter instructs script to simulate INDELs without considering insertions at microhomologies.", action='store_true')
+	parser.add_argument("-S", "--Signatures",  help="Optional parameter instructs script to simulate based upon a set of signatures and their activities.", action='store_true')
+	parser.add_argument("-ol", "--overlap",  help="Optional parameter instructs script to allow mutations to overlap during the simulations.", action='store_true')
+	parser.add_argument("-gD", "--gender", help="Optional parameter instructs script to create the context files based on female (two x chromosomes.", action='store_true')
+
+
+	args=parser.parse_args()
+	project = args.project
+	genome = args.genome
+	contexts = args.context
+	contexts.sort(reverse=True)
+
+	updating = args.update
+
+	if args.simulations:
+		simulation_number = int(args.simulations)
+
+	if args.exome:
+		exome = True
+
+	if args.bed:
+		bed = True
+		bed_file = args.bed
+
+	if args.indel:
+		limited_indel = True
+		indel = True
+
+	if args.Signatures:
+		signature_sim = True
+
+	if args.overlap:
+		overlap = True
+
+
+	species = None
+	if genome.upper() == 'GRCH37' or genome.upper() == 'GRCH38': 
+		species = "homo_sapiens"
+	elif genome.upper() == 'MM10' or genome.upper() == 'MM9': 
+		species = "mus_musculus"
+	else:
+		print(genome + " is not supported. The following genomes are supported:\nGRCh37, GRCh38, mm10")
+
+	############################## Reference chromsomes ######################################
+
+	chromosomes = ['X', 'Y', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
+				   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
+
+	# chromosomes = ['X', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
+	# 			   '13', '14', '15', '16', '17', '18', '19', '20', '21', '22']
+
+
+
+	tsb_ref = {0:['N','A'], 1:['N','C'], 2:['N','G'], 3:['N','T'],
+			   4:['T','A'], 5:['T','C'], 6:['T','G'], 7:['T','T'],
+			   8:['U','A'], 9:['U','C'], 10:['U','G'], 11:['U','T'],
+			   12:['B','A'], 13:['B','C'], 14:['B','G'], 15:['B','T'],
+			   16:['N','N'], 17:['T','N'], 18:['U','N'], 19:['B','N']}
+
+	tsb_ref_rev = {'N':{'A':0, 'C':1, 'G':2, 'T':3, 'N':16},
+			   	   'T':{'A':4, 'C':5, 'G':6, 'T':7, 'N':17},
+			       'U':{'A':8, 'C':9, 'G':10, 'T':11, 'N':18},
+			       'B':{'A':12, 'C':13, 'G':14, 'T':15, 'N':19}}
+
+	if species == 'mus_musculus':
+		chromosomes = chromosomes[:21]
+
+	if args.gender:
+		gender = 'female'
+		chromosomes.remove('Y')
+
+
+	time_stamp = datetime.date.today()
+
+	error_file = 'logs/sigProfilerSimulator_' + project + "_" + genome + "_" + str(time_stamp) + ".err"
+	log_file = 'logs/sigProfilerSimulator_' + project + "_" + genome + "_" + str(time_stamp) + ".out"
+	if os.path.exists(error_file):
+		os.system("rm " + error_file)
+	if os.path.exists(log_file):
+		os.system("rm " + log_file)
+
+	sys.stderr = open(error_file, 'w')
+	logging.basicConfig(filename=log_file, level=logging.INFO)
+
+
+	# Ensures that the chromosome strings are saves properly:
+	chromosome_string_path = "references/chromosomes/tsb/" + genome + "/"
+	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
+		print("The chromosome strings were not saved properly or have not been created yet. Rerun the SigProfilerMatrixGenerator isntall script.")
+
+
+	# Ensures that the chromosome proportions are saved 
+	if os.path.exists(chromosome_string_path + genome + "_proportions.txt") == False:
+		print("Chromosome proportion file does not exist. Creating now...")
+		chromosomeProbs = chrom_proportions(chromosome_string_path, genome, chromosomes)
+		print("Chromosome proportion file created. Proceeding with simulation...")
+
+	if bed:
+		print("Creating a chromosome proportion file for the given BED file ranges...")
+		chromosomeProbs = chrom_proportions_BED(bed_file, chromosome_string_path, genome, chromosomes)
+	if exome:
+		print("Creating a chromosome proportion file for the exome...")
+		bed_file = "references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
+		chromosomeProbs = chrom_proportions_BED(bed_file, chromosome_string_path, genome, chromosomes)
+
+
+	# Ensures the catalogue file is saved for the given context
+	catalogue_files = {}
+	matrix_path = "references/matrix/" + project + "/"
+	for context in contexts:
+		if context == 'DINUC':
+			file_name = ".DBS78"
+		elif context == 'INDEL':
+			file_name = '.DBS94'
+		else:
+			file_name = '.SBS' + context
+		if exome:
+			catalogue_file = matrix_path + project + file_name + '.exome'
+		else:
+			if bed:
+				catalogue_file = matrix_path + project + file_name + '.region'
+			else:
+				catalogue_file = matrix_path + project + file_name + '.all'
+
+		catalogue_files[context] = catalogue_file
+
+		vcf_files = "references/vcf_files/" + project + "/"
+		parent_dir = os.getcwd()
+		matrix_dir = "scripts/"
+		if os.path.exists (catalogue_file) == False:
+			if os.path.exists (vcf_files) == False or len(os.listdir(vcf_files)) == 0:
+				print ("Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
+			else:
+				proceed = input(catalogue_file + " does not exist. Would you like to create this file now? [Y/N]").upper()
+				if proceed == 'Y':
+					print("Creating the matrix file now. This may take some time...")
+					os.chdir(matrix_dir)
+					command_suffix = ""
+					if bed:
+						command_suffix = ' -b ' + bed_file
+					if exome:
+						#if 'INDEL' in contexts:
+						if context == 'INDEL':
+							if limited_indel:
+								os.system("python3 sigProfilerMatrixGenerator.py -i -g " + genome + " -p "+ project + " -e" + command_suffix)
+							else:
+								os.system("python3 sigProfilerMatrixGenerator.py -ie -g " + genome + " -p "+ project + " -e" + command_suffix)
+						else:
+							os.system("python3 sigProfilerMatrixGenerator.py -snv -g " + genome + " -p "+ project + " -e" + command_suffix)
+					else:
+						#if 'INDEL' in contexts:
+						if context == 'INDEL':
+							if limited_indel:
+								os.system("python3 sigProfilerMatrixGenerator.py -i -g " + genome + " -p "+ project + command_suffix)
+							else:
+								os.system("python3 sigProfilerMatrixGenerator.py -ie -g " + genome + " -p "+ project + command_suffix)
+						else:
+							os.system("python3 sigProfilerMatrixGenerator.py -snv -g " + genome + " -p "+ project + command_suffix)
+
+					print("The matrix file has been created. Continuing with simulations...")
+				else:
+					print("Simulation has stopped. Please create the catalogue file before continuing with simulations.")
+					sys.exit()
+		os.chdir(parent_dir)
+
+	# Esnures that the nucleotide context files are saved properly
+	nucleotide_context_files = {}
+	for context in contexts:
+		if bed:
+			nucleotide_context_file = "references/chromosomes/context_distributions/context_distribution_" + genome + "_" + context + "_BED.csv"
+		else:
+			if exome:
+				nucleotide_context_file = "references/chromosomes/context_distributions/context_distribution_" + genome + "_" + context + "_exome.csv"
+			else:
+				nucleotide_context_file = "references/chromosomes/context_distributions/context_distribution_" + genome + "_" + context + ".csv"
+		nucleotide_context_files[context] = nucleotide_context_file
+		if os.path.exists(nucleotide_context_file) == False and context != 'INDEL':
+			print("The context distribution file does not exist. This file needs to be created before simulating.")
+			if bed:
+				os.system("python3 scripts/save_context_distribution_96_192_1536_DINUC_with_range_option.py -c " + context + " -g " + genome + "-b " + bed_file)
+			else:
+				os.system("python3 scripts/save_context_distribution_96_192_1536_DINUC_with_range_option.py -c " + context + " -g " + genome) 
+			print("Context distribution file successfully created. Proceeding with simulation...")
+
+
+	context_string = "_".join(contexts)
+	if bed:
+		output_path = "simulation_output/" + project + '_simulations_' + genome + '_' + context_string + '_BED/'
+	elif signature_sim:
+		output_path = "simulation_output/" + project + '_simulations_' + genome + '_' + context_string + '_signature_based/'
+	elif exome:
+		output_path = "simulation_output/" + project + '_simulations_' + genome + '_' + context_string + '_exome/'
+	else:
+		output_path = "simulation_output/" + project + '_simulations_' + genome + '_' + context_string + '/'
+	
+
+	# Set parameters for 96, 1536, TSB, DINUC, or INDEL:
+	sim = None
+	mut_start = None
+	mut_length = None
+	if context == '96':
+		sim = 2
+		mut_start = 1
+		mut_save = 2
+	elif context == '1536':
+		sim = 3
+		mut_start = 2
+		mut_save = 3
+	elif context == '192':
+		sim = 4 
+		mut_start = 1
+		mut_save = 4
+	elif context == 'DINUC':
+		sim = 5
+		mut_start = 0
+		mut_save = 0
+	elif context == 'INDEL':
+		sim = 6
+		mut_save = 0
+		mut_start = 0
+	elif context == '3072':
+		sim = 7
+		mut_save = 5
+		mut_start = 2
+		
+
+
+	# Begin the simulation process
+	if signature_sim:
+		mut_prep = mutation_preparation_sig(catalogue_files)
+	else:
+		mut_prep = mutation_preparation(catalogue_files)
+	reference_sample = mut_prep[0][0]
+	mut_dict = mut_tracker(mut_prep[0], mut_prep[1], reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed)
+	simulator(mut_prep[0], mut_prep[1], mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap)
+	end_run = time.time()
+	run_time = end_run - start_run
+	logging.info("Simulation completed\nJob took " + str(run_time) + " seconds")
+	print("Simulation completed\nJob took " , run_time, " seconds")
+
+	
+if __name__ == '__main__':
+	main()
+
+

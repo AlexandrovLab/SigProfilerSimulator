@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='SigProfilerSimulator',
-		version='0.1.11',
+		version='0.1.13',
 		description='SigProfiler simulator tool',
 		url='',
 		author='Erik Bergstrom',
@@ -15,7 +15,7 @@ setup(name='SigProfilerSimulator',
 		license='UCSD',
 		packages=find_packages(),
 		install_requires =[
-			"SigProfilerMatrixGenerator>=1.0.0",
-			"sigProfilerPlotting>=1.0.1"],
+			"SigProfilerMatrixGenerator>=1.0.10",
+			"sigProfilerPlotting>=1.0.3"],
 		include_package_data=True,
 		zip_safe=False)
