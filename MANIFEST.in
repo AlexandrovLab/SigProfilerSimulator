@@ -1,2 +1,3 @@
 include README.rst
 include README_simulator*
+include SigProfilerSimulator/seeds.txt

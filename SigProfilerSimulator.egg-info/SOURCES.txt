@@ -5,6 +5,8 @@ setup.py
 SigProfilerSimulator/SigProfilerSimulator.py
 SigProfilerSimulator/__init__.py
 SigProfilerSimulator/mutational_simulator.py
+SigProfilerSimulator/seeds.txt
+SigProfilerSimulator/version.py
 SigProfilerSimulator.egg-info/PKG-INFO
 SigProfilerSimulator.egg-info/SOURCES.txt
 SigProfilerSimulator.egg-info/dependency_links.txt
