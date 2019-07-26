@@ -305,6 +305,9 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	log_out.close()
 
 	# For chroms in chromosomes_parallel:
+	for sample in sample_names:
+		if not os.path.exists(output_path + sample + "/"):
+			os.makedirs(output_path + sample + "/")
 	for i in range (0, len(chromosomes_parallel), 1):
 		pool.apply_async(simScript.simulator, args=(sample_names,  mut_prep, mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file))
 	pool.close()
