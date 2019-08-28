@@ -3,8 +3,10 @@ README.md
 README_simulator.pdf
 setup.py
 SigProfilerSimulator/SigProfilerSimulator.py
+SigProfilerSimulator/SigProfilerSimulator_old.py
 SigProfilerSimulator/__init__.py
 SigProfilerSimulator/mutational_simulator.py
+SigProfilerSimulator/mutational_simulator_old.py
 SigProfilerSimulator/seeds.txt
 SigProfilerSimulator/version.py
 SigProfilerSimulator.egg-info/PKG-INFO

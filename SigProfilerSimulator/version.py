@@ -1,6 +1,6 @@
 
 # THIS FILE IS GENERATED FROM SIGPROFILERSIMULATOR SETUP.PY
-short_version = '0.2.5'
-version = '0.2.5'
+short_version = '0.2.7'
+version = '0.2.7'
 	
 	

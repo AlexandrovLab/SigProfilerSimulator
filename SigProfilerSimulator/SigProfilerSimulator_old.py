@@ -27,11 +27,10 @@ from SigProfilerMatrixGenerator.scripts import save_context_distribution as cont
 
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None):
 	'''
 	contexts -> [] must be a list
 	'''
-	print("\n======================================\n        SigProfilerSimulator        \n======================================\n\nChecking for all reference files and relevant matrices...")
 	start_run = time.time()
 
 	# Ensures proper string for the project's path
@@ -44,6 +43,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	bed = False
 	if bed_file:
 		bed = True
+	exome_file = exome
 
 	# Asigns a species based on the genome parameter
 	species = None
@@ -52,7 +52,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	elif genome.upper() == 'MM10' or genome.upper() == 'MM9': 
 		species = "mus_musculus"
 	else:
-		species = "custom"
+		print(genome + " is not supported. The following genomes are supported:\nGRCh37, GRCh38, mm9, mm10.")
+
 
 	############################## References ###########################################################################################################
 	chromosomes = ['X', 'Y', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
@@ -65,31 +66,17 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			   16:['N','N'], 17:['T','N'], 18:['U','N'], 19:['B','N']}
 
 	tsb_ref_rev = {'N':{'A':0, 'C':1, 'G':2, 'T':3, 'N':16},
-				   'T':{'A':4, 'C':5, 'G':6, 'T':7, 'N':17},
-				   'U':{'A':8, 'C':9, 'G':10, 'T':11, 'N':18},
-				   'B':{'A':12, 'C':13, 'G':14, 'T':15, 'N':19}}
-				   
+			   	   'T':{'A':4, 'C':5, 'G':6, 'T':7, 'N':17},
+			       'U':{'A':8, 'C':9, 'G':10, 'T':11, 'N':18},
+			       'B':{'A':12, 'C':13, 'G':14, 'T':15, 'N':19}}
+			       
 	if species == 'mus_musculus':
 		chromosomes = chromosomes[:21]
 
-	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
-	if species == 'custom':
-		chromosome_string_path, ref_dir = matRef.reference_paths(genome)
-		chromosomes = os.listdir(chromosome_string_path)
-		if ".DS_Store" in chromosomes:
-			chromosomes.remove(".DS_Store")
-
-		chromosomes = [x.split(".")[0] for x in chromosomes if len(x) < 8]
-	
 	if gender == 'female' or gender.upper() == 'F':
-		if "Y" in chromosomes:
-			chromosomes.remove('Y')
+		chromosomes.remove('Y')
 
-	if exome == "custom":
-		exome_file = exome
-	else:
-		exome_file = ref_dir + "/references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
-
+	
 	
 	############################## Log and Error Files ##################################################################################################
 	time_stamp = datetime.date.today()
@@ -105,7 +92,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		os.system("rm " + log_file)
 
 
-	# sys.stderr = open(error_file, 'w')
+	sys.stderr = open(error_file, 'w')
 	log_out = open(log_file, 'w')
 	log_out.write("THIS FILE CONTAINS THE METADATA ABOUT SYSTEM AND RUNTIME\n\n\n")
 	log_out.write("-------System Info-------\n")
@@ -128,18 +115,17 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	# Ensures that the chromosome strings are saves properly:
 	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
 	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
-		print("     The chromosome strings were not saved properly or have not been created yet. Rerun the SigProfilerMatrixGenerator install script.")
+		print("The chromosome strings were not saved properly or have not been created yet. Rerun the SigProfilerMatrixGenerator isntall script.")
 
 	# Ensures that the chromosome proportions are saved: 
 	if os.path.exists(chromosome_string_path + genome + "_proportions.txt") == False:
-		print("     Chromosome proportion file does not exist. Creating now...", end='')
+		print("Chromosome proportion file does not exist. Creating now...")
 		chromosomeProbs = simScript.chrom_proportions(chromosome_string_path, genome, chromosomes)
-		print("Completed!")
+		print("Chromosome proportion file created. Proceeding with simulation...")
 
 	if bed_file:
-		print("     Creating a chromosome proportion file for the given BED file ranges...", end='')
+		print("Creating a chromosome proportion file for the given BED file ranges...")
 		chromosomeProbs = simScript.chrom_proportions_BED(bed_file, chromosome_string_path, genome, chromosomes)
-		print("Completed!")
 
 	# Ensures that the mutational matrices exist:
 	catalogue_files = {}	
@@ -176,28 +162,28 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		if chrom_based:
 			if os.path.exists (catalogue_file + '.chr1') == False:
 				if os.path.exists (vcf_files_2) == False and len(os.listdir(vcf_files_1)) == 0:
-					print ("     Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
+					print ("Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
 				else:
-					print("     Matrices per chromosomes do not exist. Creating the matrix files now.")
+					print("Matrices per chromosomes do not exist. Creating the matrix files now.")
 					matGen.SigProfilerMatrixGeneratorFunc(project, genome, project_path ,plot=False, exome=exome, bed_file=bed_file, chrom_based=True)
-					# print("The matrix file has been created. Continuing with simulations...")
+					print("The matrix file has been created. Continuing with simulations...")
 			if os.path.exists (catalogue_file) == False:
 				if os.path.exists (vcf_files_2) == False and len(os.listdir(vcf_files_1)) == 0:
-					print ("     Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
+					print ("Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
 				else:
-					print("     " + catalogue_file + " does not exist. Creating the matrix file now.")
+					print(catalogue_file + " does not exist. Creating the matrix file now.")
 					matGen.SigProfilerMatrixGeneratorFunc(project, genome, project_path ,plot=False, exome=exome, bed_file=bed_file)
-					# print("The matrix file has been created. Continuing with simulations...")
+					print("The matrix file has been created. Continuing with simulations...")
 
 
 		else:	
 			if os.path.exists (catalogue_file) == False:
 				if os.path.exists (vcf_files_2) == False and len(os.listdir(vcf_files_1)) == 0:
-					print ("     Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
+					print ("Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
 				else:
-					print("     " + catalogue_file + " does not exist. Creating the matrix file now.")
+					print(catalogue_file + " does not exist. Creating the matrix file now.")
 					matGen.SigProfilerMatrixGeneratorFunc(project, genome, project_path ,plot=False, exome=exome, bed_file=bed_file)
-					# print("The matrix file has been created. Continuing with simulations...")
+					print("The matrix file has been created. Continuing with simulations...")
 
 
 	# Esnures that the nucleotide context files are saved properly
@@ -217,12 +203,9 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
 
 		nucleotide_context_files[context] = nucleotide_context_file
-		
-		if os.path.exists(nucleotide_context_file) == True and bed:
-			os.remove(nucleotide_context_file)
 
 		if os.path.exists(nucleotide_context_file) == False and (context != 'INDEL' and context != 'ID'):
-			print("     The context distribution file does not exist. This file needs to be created before simulating. This may take several hours...")
+			print("The context distribution file does not exist. This file needs to be created before simulating. This may take several hours...")
 			if bed:
 				output_file = ref_path + '/context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '_BED.csv'
 				context_dist.context_distribution_BED(context, output_file, chromosome_string_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_path, tsb_ref)
@@ -232,10 +215,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			else:
 				output_file = ref_path + '/context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '.csv'
 				context_dist.context_distribution(context, output_file, chromosome_string_path, chromosomes, tsb_ref)
-			print("     The context distribution file has been created!")
-			if gender == 'female' or gender.upper() == 'F':
-				if "Y" in chromosomes:
-					chromosomes.remove('Y')
+			print("Context distribution file successfully created. Proceeding with simulation...")
+
 
 
 	############################## Set-up output files ##################################################################################################
@@ -247,11 +228,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	else:
 		output_path = project_path + "output/simulations/" + project + '_simulations_' + genome + '_' + context_string + '/'
 
-
 	if os.path.exists(output_path):
 		shutil.rmtree(output_path)
-		os.makedirs(output_path)
-	else:
 		os.makedirs(output_path)
 
 	############################## Set parameters for simulation ##################################################################################################
@@ -286,7 +264,6 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 
 	############################## Begin the simulation process ##################################################################################################
-	print()
 	if chrom_based:
 		sample_names, mut_prep, mut_dict = simScript.mutation_preparation_chromosomes(catalogue_files, matrix_path, chromosomes, project, log_file)
 		reference_sample = sample_names[0]
@@ -336,19 +313,15 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	log_out.write("\n\n\n-------Runtime Checkpoints------- \n")
 	log_out.close()
 
-	pool = mp.Pool(max_seed)
-	results = []
+	# For chroms in chromosomes_parallel:
+	for sample in sample_names:
+		if not os.path.exists(output_path + sample + "/"):
+			os.makedirs(output_path + sample + "/")
 	for i in range (0, len(chromosomes_parallel), 1):
-		r = pool.apply_async(simScript.simulator, args=(sample_names,  mut_prep, mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file, spacing))
-		results.append(r)
+		pool.apply_async(simScript.simulator, args=(sample_names,  mut_prep, mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file))
 	pool.close()
 	pool.join()
 
-	for r in results:
-		r.wait()
-		if not r.successful():
-			# Raises an error when not successful
-			r.get()
 
 	pool = mp.Pool(max_seed)
 
@@ -356,6 +329,14 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		pool.apply_async(simScript.combine_simulation_files, args=(iterations_parallel[i], output_path, chromosomes, sample_names, bed))
 	pool.close()
 	pool.join()
+	# for sample in sample_names:
+	# 	concat_files = os.listdir(output_path + sample + "/")
+	# 	for i in range (1, simulations + 1, 1):
+	# 		with open(output_path + sample + "/" + sample + "_" + str(i) + ".vcf", "wb") as f:
+	# 			for chrom in chromosomes:
+	# 				with open(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf",'rb') as fd:
+	# 					shutil.copyfileobj(fd, f)
+	# 				os.remove(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf")
 
 
 	end_run = time.time()
