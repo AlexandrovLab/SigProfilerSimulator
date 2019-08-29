@@ -582,7 +582,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 	
 	
 
-def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file, spacing):
+def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file, spacing):
 	'''
 	Simulates mutational signatures in human cancer in an unbiased fashion. The function
 		requires a list of sample names, a dictionary of the number of mutations for each
@@ -764,8 +764,10 @@ def simulator (sample_names, samples, mutation_tracker, chromosome_string_path, 
 							mut_start = 2
 						
 						mutationsCount = {}
-						random_sample = random.sample(list(samples[context]),1)[0]
-						for nuc in samples[context][random_sample]:
+						# random_sample = random.sample(list(samples[context]),1)[0]
+						random_sample = random.sample(list(mutation_tracker[context]),1)[0]
+					
+						for nuc in mutation_tracker[context][random_sample]:
 							mutationsCount[nuc] = mutation_tracker[context][sample][nuc][chrom]
 						if sample in left_over_mutations and simulations in left_over_mutations[sample]: 
 

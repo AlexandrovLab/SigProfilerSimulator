@@ -339,7 +339,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	pool = mp.Pool(max_seed)
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
-		r = pool.apply_async(simScript.simulator, args=(sample_names,  mut_prep, mut_dict, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file, spacing))
+		mut_dict_parallel = {k1:{k2:{k3:{k4:v4 for k4, v4 in v3.items() if k4 in chromosomes_parallel[i]} for k3, v3 in v2.items()} for k2, v2 in v1.items()} for k1, v1 in mut_dict.items()}
+		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file, spacing))
 		results.append(r)
 	pool.close()
 	pool.join()
