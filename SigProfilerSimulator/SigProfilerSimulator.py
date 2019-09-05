@@ -27,7 +27,7 @@ from SigProfilerMatrixGenerator.scripts import save_context_distribution as cont
 
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseAWGN=False):
 	'''
 	contexts -> [] must be a list
 	'''
@@ -85,11 +85,6 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		if "Y" in chromosomes:
 			chromosomes.remove('Y')
 
-	if exome == "custom":
-		exome_file = exome
-	else:
-		exome_file = ref_dir + "/references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
-
 	
 	############################## Log and Error Files ##################################################################################################
 	time_stamp = datetime.date.today()
@@ -145,14 +140,20 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	catalogue_files = {}	
 	for context in contexts:
 		matrix_path = project_path + "output/"
-		if context == 'DINUC' or context == 'DBS':
+		if context == 'DINUC' or 'DBS' in context:
 			context_folder = 'DBS'
 			matrix_path = matrix_path + context_folder + "/"
-			file_name = ".DBS78"
-		elif context == 'INDEL' or context == 'ID':
+			if context == 'DBS' or context == 'DINUC' or context == '78':
+				file_name = ".DBS78"
+			else:
+				file_name = '.' + context 
+		elif context == 'INDEL' or 'ID' in context:
 			context_folder = 'ID'
 			matrix_path = matrix_path + context_folder + "/"
-			file_name = '.ID83'
+			if context == 'INDEL' or context == 'ID' or context == '83':
+				file_name = '.ID83'
+			else:
+				file_name = '.ID' + context
 		else:
 			context_folder = 'SBS'
 			matrix_path = matrix_path + context_folder + "/"
@@ -254,36 +255,6 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	else:
 		os.makedirs(output_path)
 
-	############################## Set parameters for simulation ##################################################################################################
-
-	sim = None
-	mut_start = None
-	mut_length = None
-	if context == '96':
-		sim = 2
-		mut_start = 1
-		mut_save = 2
-	elif context == '1536':
-		sim = 3
-		mut_start = 2
-		mut_save = 3
-	elif context == '192' or context == '384':
-		sim = 4 
-		mut_start = 1
-		mut_save = 4
-	elif context == 'DINUC' or context == 'DBS':
-		sim = 5
-		mut_start = 0
-		mut_save = 0
-	elif context == 'INDEL' or context == 'ID':
-		sim = 6
-		mut_save = 0
-		mut_start = 0
-	elif context == '3072':
-		sim = 7
-		mut_save = 5
-		mut_start = 2
-
 
 	############################## Begin the simulation process ##################################################################################################
 	print()
@@ -295,6 +266,11 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		reference_sample = sample_names[0]
 		mut_dict = simScript.mut_tracker(sample_names,  mut_prep, reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed_file, log_file)
 	
+
+	# Add desired noise if applicable:
+	# if noisePoisson or noiseAWGN:
+	# 	mut_dict = simScript.noise(mut_dict, noisePoisson, noiseAWGN)
+
 	# Set-up parallelization:
 	processors = mp.cpu_count()
 	max_seed = processors
@@ -336,11 +312,16 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	log_out.write("\n\n\n-------Runtime Checkpoints------- \n")
 	log_out.close()
 
+	if exome:
+		bed = True
+		bed_file = ref_dir + "/SigProfilerMatrixGenerator/references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
+
+
 	pool = mp.Pool(max_seed)
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
 		mut_dict_parallel = {k1:{k2:{k3:{k4:v4 for k4, v4 in v3.items() if k4 in chromosomes_parallel[i]} for k3, v3 in v2.items()} for k2, v2 in v1.items()} for k1, v1 in mut_dict.items()}
-		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, exome, overlap, project_path, seqInfo, log_file, spacing))
+		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN))
 		results.append(r)
 	pool.close()
 	pool.join()
@@ -354,7 +335,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	pool = mp.Pool(max_seed)
 
 	for i in range (0, len(iterations_parallel), 1):
-		pool.apply_async(simScript.combine_simulation_files, args=(iterations_parallel[i], output_path, chromosomes, sample_names, bed))
+		pool.apply_async(simScript.combine_simulation_files, args=(iterations_parallel[i], output_path, chromosomes, sample_names, bed, exome))
 	pool.close()
 	pool.join()
 

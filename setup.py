@@ -11,7 +11,7 @@ def readme():
 	with open('README.rst') as f:
 		return(f.read())
 
-VERSION = '0.2.9'
+VERSION = '0.2.13'
 
 def write_version_py(filename='SigProfilerSimulator/version.py'):
 	# Copied from numpy setup.py
