@@ -11,7 +11,7 @@ def readme():
 	with open('README.rst') as f:
 		return(f.read())
 
-VERSION = '0.2.14'
+VERSION = '0.2.17'
 
 def write_version_py(filename='SigProfilerSimulator/version.py'):
 	# Copied from numpy setup.py
@@ -37,6 +37,7 @@ setup(name='SigProfilerSimulator',
 		packages=find_packages(),
 		install_requires =[
 			"SigProfilerMatrixGenerator>=1.0.14",
-			"sigProfilerPlotting>=1.0.3"],
+			"sigProfilerPlotting>=1.0.3",
+			"fastrand>=1.2"],
 		include_package_data=True,
 		zip_safe=False)

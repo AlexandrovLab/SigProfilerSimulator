@@ -18,8 +18,8 @@ import shutil
 import bisect
 import numpy as np
 from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGenerator as matRef
-from memory_profiler import profile
-from pympler.tracker import SummaryTracker
+# from memory_profiler import profile
+# from pympler.tracker import SummaryTracker
 import pandas as pd
 import re
 start_run = time.time()
@@ -735,15 +735,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 
 	if seqInfo:
 		seqOut_path = project_path + "output/vcf_files/simulations/"
-		if not os.path.exists(seqOut_path):
-			os.makedirs(seqOut_path)
-
-		for context in contexts:
-			if not os.path.exists(seqOut_path + context + "/"):
-				os.makedirs(seqOut_path + context + "/")
-			else:
-				shutil.rmtree(seqOut_path+ context + "/")
-				os.makedirs(seqOut_path+ context + "/")
 
 
 	file_context = "_".join(contexts)

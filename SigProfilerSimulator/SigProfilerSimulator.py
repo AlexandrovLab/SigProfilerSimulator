@@ -430,6 +430,19 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		bed = True
 		bed_file = ref_dir + "/SigProfilerMatrixGenerator/references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
 
+	if seqInfo:
+		seqOut_path = project_path + "output/vcf_files/simulations/"
+		if not os.path.exists(seqOut_path):
+			os.makedirs(seqOut_path)
+
+		for context in contexts:
+			if not os.path.exists(seqOut_path + context + "/"):
+				os.makedirs(seqOut_path + context + "/")
+			else:
+				print(seqOut_path+ context + "/")
+				shutil.rmtree(seqOut_path+ context + "/")
+				os.makedirs(seqOut_path+ context + "/")
+
 
 	pool = mp.Pool(max_seed)
 	results = []

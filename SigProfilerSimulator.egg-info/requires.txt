@@ -1,2 +1,3 @@
 SigProfilerMatrixGenerator>=1.0.14
 sigProfilerPlotting>=1.0.3
+fastrand>=1.2
