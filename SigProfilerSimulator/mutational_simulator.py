@@ -815,7 +815,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 							mut_start = 0
 							mut_save = 0
 						elif context == '24':
-							sim = 9
+							sim = 10
 							mut_start = 0
 							mut_save = 2
 						elif context == '96':
@@ -2238,7 +2238,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 							# Organizes nucleotide keys for later reference.
 							for nuc in nuc_keys:
 								mutationsCountTSB[nuc[0]][nuc] = mutationsCount[nuc]
-								if sim == 9:
+								if sim == 10:
 									base_keys[nuc[0]].append(nuc[0] + nuc[2])
 								elif sim == 4:
 									base_keys[nuc[0]].append(nuc[0] + nuc[2] + nuc[4] + nuc[8])
