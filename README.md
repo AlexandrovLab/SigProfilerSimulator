@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/License-BSD\%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
 # SigProfilerSimulator 
 SigProfilerSimulator allows realistic simulations of mutational signatures in cancer genomes. The tool can be used to simulate signatures of single point mutations, double point mutations, and insertion/deletions. Further, the tool makes use of SigProfilerMatrixGenerator and SigProfilerPlotting.  
 
