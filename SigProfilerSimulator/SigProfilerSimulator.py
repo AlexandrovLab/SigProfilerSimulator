@@ -148,6 +148,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	if bed_file:
 		bed = True
 	exome_file = None
+
 	# Asigns a species based on the genome parameter
 	species = None
 	if genome.upper() == 'GRCH37' or genome.upper() == 'GRCH38': 
@@ -380,7 +381,6 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		reference_sample = sample_names[0]
 		mut_dict = simScript.mut_tracker(sample_names,  mut_prep, reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed_file, log_file)
 	
-
 	# Add desired noise if applicable:
 	# if noisePoisson or noiseAWGN:
 	# 	mut_dict = simScript.noise(mut_dict, noisePoisson, noiseAWGN)
@@ -442,7 +442,6 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 				print(seqOut_path+ context + "/")
 				shutil.rmtree(seqOut_path+ context + "/")
 				os.makedirs(seqOut_path+ context + "/")
-
 
 	pool = mp.Pool(max_seed)
 	results = []

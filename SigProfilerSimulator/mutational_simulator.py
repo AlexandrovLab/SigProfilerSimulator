@@ -484,7 +484,6 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 	This function allocates the mutations based upon the size of the chromosome.
 	
 	'''
-
 	out = open(log_file, 'a')
 	mutation_tracker = {}
 	for context in nucleotide_context_files:
@@ -525,7 +524,6 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 						nuc = line[0]
 						line[1:] = list(map(float, line[1:]))
 						nuc_probs[nuc] = line[1:]
-
 
 
 			for sample in sample_names:
@@ -1365,7 +1363,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 
 										if seq != potential_sequence[-int(indels_M[1]):] and seq2 != potential_sequence[:int(indels_M[1])] and seq3 != potential_sequence[:int(indels_M[1])+1]:
 											if not overlap:
-												for p in range(random_number, random_number+i, 1):
+												for p in range(random_number, random_number+M_length+1, 1):
 													if p in recorded_positions:
 														stop_flag = True
 											if stop_flag:
@@ -1465,7 +1463,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										if "N" not in seq:
 											if seq2 != potential_sequence and tsb_ref[sequence[random_number-int(indels_O[0])]][1] != potential_sequence:
 												if not overlap:
-													for p in range(random_number, random_number+i, 1):
+													for p in range(random_number, random_number+int(indels_O[0])+1, 1):
 														if p in recorded_positions:
 															stop_flag = True
 												if stop_flag:
