@@ -129,7 +129,7 @@ def probability (chromosome=None, position=None, mutation=None, context=None, ge
 
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseAWGN=0, cushion=100, region=None):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False):
 	'''
 	contexts -> [] must be a list
 	'''
@@ -297,7 +297,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 
 		else:	
-			if os.path.exists (catalogue_file) == False or bed_file:
+			if os.path.exists (catalogue_file) == False:# or bed_file:
 				if os.path.exists (vcf_files_2) == False and len(os.listdir(vcf_files_1)) == 0:
 					print ("     Please place your vcf files for each sample into the 'references/vcf_files/[project]/' directory. Once you have done that, rerun this script.")
 				else:
@@ -381,6 +381,14 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		reference_sample = sample_names[0]
 		mut_dict = simScript.mut_tracker(sample_names,  mut_prep, reference_sample, nucleotide_context_files, chromosome_string_path, genome, chromosomes, bed_file, log_file)
 	
+
+	if vcf:
+		if "" in sample_names:
+			sample_names.remove("")
+		for sample in sample_names:
+			if not os.path.exists(output_path + sample + "/"):
+				os.makedirs(output_path + sample + "/")
+
 	# Add desired noise if applicable:
 	# if noisePoisson or noiseAWGN:
 	# 	mut_dict = simScript.noise(mut_dict, noisePoisson, noiseAWGN)
@@ -447,7 +455,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
 		mut_dict_parallel = {k1:{k2:{k3:{k4:v4 for k4, v4 in v3.items() if k4 in chromosomes_parallel[i]} for k3, v3 in v2.items()} for k2, v2 in v1.items()} for k1, v1 in mut_dict.items()}
-		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN))
+		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf))
 		results.append(r)
 	pool.close()
 	pool.join()
@@ -460,13 +468,19 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	pool = mp.Pool(max_seed)
 
-	if region:
-		bed=False
+	#if region:
+	bed=False
+
 	for i in range (0, len(iterations_parallel), 1):
-		pool.apply_async(simScript.combine_simulation_files, args=(iterations_parallel[i], output_path, chromosomes, sample_names, bed, exome))
+		r = pool.apply_async(simScript.combine_simulation_files, args=(iterations_parallel[i], output_path, chromosomes, sample_names, bed, exome, vcf))
 	pool.close()
 	pool.join()
 
+	for r in results:
+		r.wait()
+		if not r.successful():
+			# Raises an error when not successful
+			r.get()
 
 	end_run = time.time()
 	run_time = end_run - start_run
