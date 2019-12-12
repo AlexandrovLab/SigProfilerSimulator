@@ -1,6 +1,5 @@
 MANIFEST.in
 README.md
-README_simulator.pdf
 setup.py
 SigProfilerSimulator/SigProfilerSimulator.py
 SigProfilerSimulator/__init__.py

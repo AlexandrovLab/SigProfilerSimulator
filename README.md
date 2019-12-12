@@ -4,7 +4,9 @@
 SigProfilerSimulator allows realistic simulations of mutational signatures in cancer genomes. The tool can be used to simulate signatures of single point mutations, double point mutations, and insertion/deletions. Further, the tool makes use of SigProfilerMatrixGenerator and SigProfilerPlotting.  
 
 # INTRODUCTION
-The purpose of this document is to provide a guide for using the SigProfilerSimulator for simulating mutational signatures in cancer. This tool allows for realistic simulations of single point mutations, double point mutations, and insertions/deletions with the goal of providing a background model for statistical analysis. The simulations are performed in an unbiased fashion, relying on random chance as the main distribution and can be performed across the entire genome or limited to user-provided ranges. This tool currently supports the GRCh37, GRCh38, mm9, and mm10 assemblies, however, additional genomes may be installed (see Simulating Additional Genomes). In addition, this tool makes use of SigProfilerMatrixGenerator and SigProfilerPlotting.
+The purpose of this document is to provide a guide for using the SigProfilerSimulator for simulating mutational signatures in cancer. This tool allows for realistic simulations of single point mutations, double point mutations, and insertions/deletions with the goal of providing a background model for statistical analysis. The simulations are performed in an unbiased fashion, relying on random chance as the main distribution and can be performed across the entire genome or limited to user-provided ranges. This tool currently supports the GRCh37, GRCh38, mm9, and mm10 assemblies, however, additional genomes may be installed. In addition, this tool makes use of SigProfilerMatrixGenerator and SigProfilerPlotting. An extensive Wiki page detailing the usage of this tool can be found at https://osf.io/usxjz/wiki/home/.
+
+For users that prefer working in an R environment, a wrapper package is provided and can be found and installed from: https://github.com/AlexandrovLab/SigProfilerSimulatorR
 
 # PREREQUISITES
 The framework is written in PYTHON, however, it also requires the following additional software with the given versions (or newer) and access to BASH:
@@ -15,7 +17,7 @@ The framework is written in PYTHON, however, it also requires the following addi
 
 -SigProfilerMatrixGenerator (Current version: https://github.com/AlexandrovLab/SigProfilerMatrixGenerator )
 
-While the code was developed for application on a local computer, access to a cluster with greater computational power may be required for simulating a large number of mutations.
+While the code was developed for application on a local computer, access to a cluster with greater computational power may be required for simulating a large number of mutations/samples.
 
 # QUICK START GUIDE
 This section will guide you through the minimum steps required to begin simulating mutations:
@@ -29,7 +31,7 @@ This section will guide you through the minimum steps required to begin simulati
 ```
 $ python3
 >> from SigProfilerSimulator import SigProfilerSimulator as sigSim
->> sigSim.SigProfilerSimulator("BRCA", "/Users/ebergstr/Desktop/BRCA/", "GRCh37", contexts=c("96"), exome=None, simulations=100, updating=False, bed_file=None, overlap=False, gender='female',  chrom_based=False, seed_file=None, noisePoisson=False, noiseAWGN=0, cushion=100, region=None)
+>> sigSim.SigProfilerSimulator("BRCA", "/Users/ebergstr/Desktop/BRCA/", "GRCh37", contexts=c("96"), exome=None, simulations=100, updating=False, bed_file=None, overlap=False, gender='female',  chrom_based=False, seed_file=None, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False)
 ```
   The layout of the required parameters are as follows:
   
@@ -50,6 +52,7 @@ $ python3
       noiseAWGN=0:       [integer] Add a noise dependent on a +/- allowance of noise (ex: noiseAWGN=5 allows +/-2.5\% of mutations for each mutation type). Default is 0 noise. 
       cushion=100:       [integer] Allowable cushion when simulating on the exome or targetted panel. Default is 100 base pairs
       region=None:       [string] Path to targetted region panel for simulated on a user-defined region. Default is whole-genome simulations.
+      vcf=False		[boolean] Outputs simulated samples as vcf files with one file per iteration per sample. By default, the tool outputs all samples from an iteration into a single maf file.
 
 
 **INPUT FILE FORMAT**
