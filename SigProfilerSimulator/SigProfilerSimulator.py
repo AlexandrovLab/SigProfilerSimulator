@@ -204,7 +204,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		os.remove(error_file)
 	if os.path.exists(log_file):
 		# os.system("rm " + log_file)
-		os.remove(error_file)
+		os.remove(log_file)
 
 
 	# sys.stderr = open(error_file, 'w')

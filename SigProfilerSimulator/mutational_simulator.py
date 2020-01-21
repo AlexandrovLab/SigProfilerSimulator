@@ -775,8 +775,12 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 	dinuc_non_tsb = ['AC', 'AT', 'CA', 'CG', 'GC', 'TA']
 
 	# Set seed
-	fastrand.pcg32_seed(seed)
-
+	try:
+		fastrand.pcg32_seed(seed)
+	except:
+		seed = seed % 100
+		fastrand.pcg32_seed(seed)
+		
 	if seqInfo:
 		seqOut_path = project_path + "output/vcf_files/simulations/"
 
