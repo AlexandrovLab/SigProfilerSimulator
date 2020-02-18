@@ -8,6 +8,8 @@ The purpose of this document is to provide a guide for using the SigProfilerSimu
 
 For users that prefer working in an R environment, a wrapper package is provided and can be found and installed from: https://github.com/AlexandrovLab/SigProfilerSimulatorR
 
+![Schematic] (Figure1.png)
+
 # PREREQUISITES
 The framework is written in PYTHON, however, it also requires the following additional software with the given versions (or newer) and access to BASH:
 
@@ -92,10 +94,13 @@ For all errors, please email the error and progress log files to the primary con
 
 **CITATION**
 
+Erik N. Bergstrom, Mark Barnes, Iñigo Martincorena, Ludmil B. Alexandrov
+bioRxiv 2020.02.13.948422; doi: https://doi.org/10.1101/2020.02.13.948422
+https://www.biorxiv.org/content/10.1101/2020.02.13.948422v1
 
 **COPYRIGHT**
 
-Copyright (c) 2019, Erik Bergstrom [Alexandrov Lab] All rights reserved.
+Copyright (c) 2020, Erik Bergstrom [Alexandrov Lab] All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
