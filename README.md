@@ -8,6 +8,8 @@ The purpose of this document is to provide a guide for using the SigProfilerSimu
 
 For users that prefer working in an R environment, a wrapper package is provided and can be found and installed from: https://github.com/AlexandrovLab/SigProfilerSimulatorR
 
+![schematic](Figure1.png)
+
 # PREREQUISITES
 The framework is written in PYTHON, however, it also requires the following additional software with the given versions (or newer) and access to BASH:
 
@@ -31,7 +33,7 @@ This section will guide you through the minimum steps required to begin simulati
 ```
 $ python3
 >> from SigProfilerSimulator import SigProfilerSimulator as sigSim
->> sigSim.SigProfilerSimulator("BRCA", "/Users/ebergstr/Desktop/BRCA/", "GRCh37", contexts=c("96"), exome=None, simulations=100, updating=False, bed_file=None, overlap=False, gender='female',  chrom_based=False, seed_file=None, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False)
+>> sigSim.SigProfilerSimulator("BRCA", "/Users/ebergstr/Desktop/BRCA/", "GRCh37", contexts=["96"], exome=None, simulations=100, updating=False, bed_file=None, overlap=False, gender='female',  chrom_based=False, seed_file=None, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False)
 ```
   The layout of the required parameters are as follows:
   

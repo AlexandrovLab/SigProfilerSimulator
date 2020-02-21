@@ -230,8 +230,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	# Ensures that the chromosome strings are saves properly:
 	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
 	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
-		print("     The chromosome strings were not saved properly or have not been created yet. Rerun the SigProfilerMatrixGenerator install script.")
-
+		print("     The chromosome strings were not saved properly or have not been created yet. Please refer to the SigProfilerMatrixGenerator README for installation instructions:\n\thttps://github.com/AlexandrovLab/SigProfilerMatrixGenerator")
+		sys.exit()
 	# Ensures that the chromosome proportions are saved: 
 	if os.path.exists(chromosome_string_path + genome + "_proportions.txt") == False:
 		print("     Chromosome proportion file does not exist. Creating now...", end='')
