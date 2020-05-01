@@ -207,7 +207,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		os.remove(log_file)
 
 
-	# sys.stderr = open(error_file, 'w')
+	sys.stderr = open(error_file, 'w')
 	log_out = open(log_file, 'w')
 	log_out.write("THIS FILE CONTAINS THE METADATA ABOUT SYSTEM AND RUNTIME\n\n\n")
 	log_out.write("-------System Info-------\n")
@@ -490,6 +490,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	print("Simulation completed\nJob took " , run_time, " seconds", file=log_out)
 	print("Simulation completed\nJob took " , run_time, " seconds")
 	log_out.close()
+	sys.stderr.close()
+
 	
 
 

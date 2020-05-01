@@ -590,6 +590,9 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 					# Pulls a distribution for randomly assigning left over mutations based upon the nucleotide distribution
 					# across the genome
 					probs = nuc_probs[base_nuc]
+					if len(probs) != len(chromosomes):
+						probs = probs[:len(chromosomes)]
+
 
 					# Instantiate the mutation dictionary for the current nucleotide
 					if sample not in mutation_tracker[context]:

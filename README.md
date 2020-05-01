@@ -19,6 +19,8 @@ The framework is written in PYTHON, however, it also requires the following addi
 
 -SigProfilerMatrixGenerator (Current version: https://github.com/AlexandrovLab/SigProfilerMatrixGenerator )
 
+-Desired reference genome (Follow the installation process on the SigProfilerMatrixGenerator README )
+
 While the code was developed for application on a local computer, access to a cluster with greater computational power may be required for simulating a large number of mutations/samples.
 
 # QUICK START GUIDE
