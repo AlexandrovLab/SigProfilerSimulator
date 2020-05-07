@@ -236,7 +236,7 @@ def random_base (limit_start, limit_end):
 	return (('ATCG')[random.randint(limit_start,limit_end)])
 
 # @profile
-def bed_ranges (chrom_sim, bed_file):
+def bed_ranges (chrom_sim, bed_file, cushion):
 	'''
 	Returns a list containing the positions corresponding with the desired
 	ranges from the BED file provided by the user.
@@ -282,7 +282,7 @@ def bed_ranges (chrom_sim, bed_file):
 				if first_reached:
 					chrom_reached = True
 					first_reached = False
-				for i in range (start-100, end+1+100, 1):
+				for i in range (start-cushion, end+cushion, 1):
 					chrom_range.append(i)
 
 	# Sorts and returns the list in case the BED file was not sorted previously
@@ -709,11 +709,9 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 											mutation_tracker[context][sample][nuc][random_chromosome] -= 1
 											nuc_count -= 1
 
+
 	print ("Mutations have been distributed. Starting simulation now...", file=out)
 	print ("Mutations have been distributed. Starting simulation now...")
-	# a.to_csv("/Users/ebergstr/Desktop/PD13166a.txt",sep="\t")
-	# print(chrom_1_track_plus)
-	# print(chrom_1_track_neg)
 	out.close()
 	return (mutation_tracker)
 	
@@ -723,7 +721,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 	
 	
 	
-def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf):
+def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, cushion, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf):
 	'''
 	Simulates mutational signatures in human cancer in an unbiased fashion. The function
 		requires a list of sample names, a dictionary of the number of mutations for each
@@ -792,7 +790,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 	file_context = "_".join(contexts)
 	for chrom in chromosomes:
 		if bed:
-			chrom_range = bed_ranges (chrom, bed_file)
+			chrom_range = bed_ranges (chrom, bed_file, cushion)
 		with open (chromosome_string_path + chrom + ".txt", "rb") as f:
 			initial_seq = f.read().strip()
 			if updating:

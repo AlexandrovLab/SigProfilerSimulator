@@ -343,7 +343,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 				context_dist.context_distribution_BED(context, output_file, chromosome_string_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_dir, tsb_ref, gender)
 			else:
 				output_file = ref_path + '/context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '.csv'
-				context_dist.context_distribution(context, output_file, chromosome_string_path, chromosomes, tsb_ref)
+				context_dist.context_distribution(context, output_file, chromosome_string_path, chromosomes, tsb_ref, genome)
 			print("     The context distribution file has been created!")
 			if gender == 'female' or gender.upper() == 'FEMALE':
 				if "Y" in chromosomes:
@@ -457,7 +457,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
 		mut_dict_parallel = {k1:{k2:{k3:{k4:v4 for k4, v4 in v3.items() if k4 in chromosomes_parallel[i]} for k3, v3 in v2.items()} for k2, v2 in v1.items()} for k1, v1 in mut_dict.items()}
-		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf))
+		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], cushion, output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf))
 		results.append(r)
 	pool.close()
 	pool.join()
