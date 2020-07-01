@@ -32,50 +32,6 @@ revcompl = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N'}[B] for B
 revbias = lambda x: ''.join([{'0':'0', '3':'3', '1':'2','2':'1','U':'T','T':'U','B':'B','N':'N','Q':'Q'}[B] for B in x][::-1])
 
 
-
-def intersections(a,b):
-	ranges = []
-	i = j = 0
-	while i < len(a) and j < len(b):
-		a_left, a_right = a[i]
-		b_left, b_right = b[j]
-		if a_right < b_right:
-			i += 1
-		else:
-			j += 1
-		if a_right >= b_left and b_right >= a_left:
-			end_pts = sorted([a_left, a_right, b_left, b_right])
-			middle = [end_pts[1], end_pts[2]]
-			ranges.append(middle)
-	ri = 0
-	while ri < len(ranges)-1:
-		if ranges[ri][1] == ranges[ri+1][0]:
-			ranges[ri:ri+2] = [[ranges[ri][0], ranges[ri+1][1]]]
-		ri += 1
-	return ranges
-
-
-
-def probability_mask (chrom, mask):
-	'''
-
-	'''
-	maskRanges = None
-	maskProbs = None
-	maskMatrix = pd.read_csv(mask, sep="\t", header=0, index_col=0)
-	maskMatrix.index = [str(x) for x in maskMatrix.index]
-	if chrom not in maskMatrix.index:
-		return(maskRanges, maskProbs)
-	else:
-		maskMatrix = maskMatrix.loc[chrom]
-		maskMatrix["Lengths"] = maskMatrix["End"] - maskMatrix["Start"] + 1
-		maskRanges = [[x,y] for x,y in zip(list(maskMatrix["Start"]), list(maskMatrix["Lengths"]))]
-		maskProbs = list(maskMatrix["Probability"])
-		if abs(sum(maskProbs) - 1) > 0.01:
-			print("Mutation rate mask distribution is incomplete. Please ensure that the distribution probabilites sums to 1 across each chromosome.")
-			sys.exit()
-		return(maskRanges, maskProbs)
-
 def noise (samples, noisePoisson=False, noiseAWGN=0):
 	if noisePoisson:
 		for mut in samples:
@@ -104,7 +60,7 @@ def combine_simulation_files (iterations, output_path, chromosomes, samples=[], 
 		 iterations  -> Number of iterations that were simulated per sample
 		output_path  -> The path where the simulations are located
 		chromosomes  -> A list of the chromosomes that were simulated
-			samples  -> A list of the sample names that were simulated
+		    samples  -> A list of the sample names that were simulated
 
 	Returns:
 		None
@@ -743,7 +699,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 								if nuc_count == samples[context][sample][nuc]:
 									break
 								else:
-									l = fastrand.pcg32bounded(len(chromosomes))
+									l = fastrand.pcg32bounded(21)
 									random_chromosome = chromosomes[l]
 									if nuc_count < samples[context][sample][nuc]:
 										mutation_tracker[context][sample][nuc][random_chromosome] += 1
@@ -765,7 +721,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 	
 	
 	
-def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, cushion, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf, mask):
+def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, cushion, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf):
 	'''
 	Simulates mutational signatures in human cancer in an unbiased fashion. The function
 		requires a list of sample names, a dictionary of the number of mutations for each
@@ -777,8 +733,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 		blah.py for details on how to create the binary file for each chromosome). 
 		
 	Parameters:
-				  sample_names  -> list of all samples 
-								   (ex: sample_names = ['PDXXXX', 'PDYYYY', ...])
+		          sample_names  -> list of all samples 
+						           (ex: sample_names = ['PDXXXX', 'PDYYYY', ...])
 		
 					   samples  -> dicationary with mutation counts for each mutation type for each
 								   sample.
@@ -789,8 +745,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									'PDYYYY':{'A[A>C]A':{'X':1,'Y':3,'1':1,...},
 											 {'A[A>T]A':{'X':3,'Y':2,...}, ...}}
 		chromosome_string_path  -> path to the chromosome reference files
-					   tsb_ref  -> dictionary that allows switching from binary code to biologically relevant strings
-				   tsb_ref_rev  -> dictionary that allows switching from biologically relevant strings back to binary values
+		               tsb_ref  -> dictionary that allows switching from binary code to biologically relevant strings
+		           tsb_ref_rev  -> dictionary that allows switching from biologically relevant strings back to binary values
 			 simulation_number  -> desired simulation number
 				   output_path  -> output path for the simulations
 					  updating  -> single value to determine whether updating should occur. 
@@ -801,7 +757,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 					  bed_file  -> if specified by the user, the BED file with the given set of ranges. Else,
 								   it will be equal to 'None'
 					  contexts  -> desired nucleotide contexts for simulation
-						 exome  -> flag that simulates based upon the exome
+					     exome  -> flag that simulates based upon the exome
 					   overlap  -> flag that allows SNV mutations and DBS mutations to overlap. By default, they will not overlap.
 
 	Returns:
@@ -840,11 +796,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 			if updating:
 				initial_seq = list(initial_seq)
 				
-		# Collect mask probabilities
-		maskRanges = None
-		if mask:
-			maskRanges, maskProbs = probability_mask(chrom, mask)
-
 		# Only for TSB simulations, opens the transcriptional info strings:
 		chrom_bias = {'TU':[],'B':[],'N':[]}
 		chrom_bias_lengths = {'TU':[],'B':[],'N':[]}
@@ -1041,11 +992,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										u = 0
 
 									break_flag = False
-									if maskRanges:
-										weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-										random_number = fastrand.pcg32bounded(weighted_range[1]) + weighted_range[0]
-									else:
-										random_number = fastrand.pcg32bounded(location_range)
+									random_number = fastrand.pcg32bounded(location_range)
 									if bed:
 										random_number = chrom_range[random_number]
 
@@ -1441,11 +1388,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										indel_types_M = {}
 										u = 0
 									# Randomly chooses a location on the current chromosome
-									if maskRanges:
-										weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-										random_number = fastrand.pcg32bounded(weighted_range[1]) + weighted_range[0]
-									else:
-										random_number = fastrand.pcg32bounded(location_range)
+									random_number = fastrand.pcg32bounded(location_range)
 									u += 1
 
 									# Assigns the original naming convention
@@ -1566,11 +1509,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										mutationsCount = {}
 										u = 0
 									# Randomly chooses a location on the current chromosome
-									if maskRanges:
-										weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-										random_number = fastrand.pcg32bounded(weighted_range[1]) + weighted_range[0]
-									else:
-										random_number = fastrand.pcg32bounded(location_range)
+									random_number = fastrand.pcg32bounded(location_range)
 									if random_number in recorded_positions and not overlap:
 										continue	
 									u += 1
@@ -1721,24 +1660,11 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										if not bed:
 											if tsb_type != 'Q':
 												location_range = chrom_bias_lengths[tsb_type][-1]
-												if maskRanges:	
-													weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-													possibleRanges = intersections([[weighted_range[0], weighted_range[1] + weighted_range[0]]], chrom_bias[tsb_type])
-													random_range = possibleRanges[fastrand.pcg32bounded(len(possibleRanges))]
-													try:
-														random_number = fastrand.pcg32bounded(random_range[1]-random_range[0]) + random_range[0]
-													except:
-														continue
-												else:
-													random_range = fastrand.pcg32bounded(location_range)
-													specific_range = bisect.bisect_left(chrom_bias_lengths[tsb_type], random_range)
-													random_number = (chrom_bias_lengths[tsb_type][specific_range] - random_range) + chrom_bias[tsb_type][specific_range][0]
+												random_range = fastrand.pcg32bounded(location_range)
+												specific_range = bisect.bisect_left(chrom_bias_lengths[tsb_type], random_range)
+												random_number = (chrom_bias_lengths[tsb_type][specific_range] - random_range) + chrom_bias[tsb_type][specific_range][0]
 											else:
-												if maskRanges:
-													weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-													random_number = fastrand.pcg32bounded(weighted_range[1]) + weighted_range[0]
-												else:												
-													random_number = fastrand.pcg32bounded(location_range)
+												random_number = fastrand.pcg32bounded(location_range)
 
 										else:
 											if tsb_type != 'Q':
@@ -2304,11 +2230,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 							while (any(mutationsCount) == True):
 
 								# Picks a random location to throw a mutation limited to the
-								if maskRanges:
-									weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-									random_number = fastrand.pcg32bounded(weighted_range[1]) + weighted_range[0]
-								else:
-									random_number = fastrand.pcg32bounded(location_range)
+								random_number = fastrand.pcg32bounded(location_range)
 								if bed:
 									random_number = chrom_range[random_number]
 								
@@ -2503,22 +2425,12 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									if not bed:
 										if tsb_type != 'Q':
 											location_range = chrom_bias_lengths[tsb_type][-1]
-											if maskRanges:	
-												weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-												possibleRanges = intersections([[weighted_range[0], weighted_range[1] + weighted_range[0]]], chrom_bias[tsb_type])
-												random_range = possibleRanges[fastrand.pcg32bounded(len(possibleRanges))]
-												random_number = fastrand.pcg32bounded(random_range[1]-random_range[0]) + random_range[0]
-											else:
-												random_range = fastrand.pcg32bounded(location_range)
-												specific_range = bisect.bisect_left(chrom_bias_lengths[tsb_type], random_range)
-												random_number = (chrom_bias_lengths[tsb_type][specific_range] - random_range) + chrom_bias[tsb_type][specific_range][0]
+											random_range = fastrand.pcg32bounded(location_range)
+											specific_range = bisect.bisect_left(chrom_bias_lengths[tsb_type], random_range)
+											random_number = (chrom_bias_lengths[tsb_type][specific_range] - random_range) + chrom_bias[tsb_type][specific_range][0]
 										else:
-											if maskRanges:
-												weighted_range = maskRanges[np.random.choice(len(maskRanges), p=maskProbs)]
-												random_number = fastrand.pcg32bounded(weighted_range[1]) + weighted_range[0]
-											else:
-												location_range = len(sequence)
-												random_number = fastrand.pcg32bounded(location_range)
+											location_range = len(sequence)
+											random_number = fastrand.pcg32bounded(location_range)
 
 									else:
 										if tsb_type != 'Q':
@@ -2575,10 +2487,10 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									# it to the output file and update the dictionary
 									bases = None
 									if mutNuc in base_keys[nuc_bias]:
-										# if random_range not in ranges:
-										# 	ranges[random_range] = 1
-										# else:
-										# 	ranges[random_range] += 1
+										if random_range not in ranges:
+											ranges[random_range] = 1
+										else:
+											ranges[random_range] += 1
 										nucIndex = base_keys[nuc_bias].index(mutNuc)
 										if nuc_keys_tsb[nuc_bias][nucIndex] in mutationsCountTSB[tsb_type] and mutationsCountTSB[tsb_type][nuc_keys_tsb[nuc_bias][nucIndex]] != 0:		
 
@@ -2633,10 +2545,10 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									# If the reverse complement of the nucleotide context is desired,
 									# write it to the output file as the reverse complement.
 									elif revCompMutNuc in base_keys[revbias(nuc_bias)]:
-										# if random_range not in ranges:
-										# 	ranges[random_range] = 1
-										# else:
-										# 	ranges[random_range] += 1
+										if random_range not in ranges:
+											ranges[random_range] = 1
+										else:
+											ranges[random_range] += 1
 										rev_tsb_type = revbias(nuc_bias)
 
 										nucIndex = base_keys[rev_tsb_type].index(revCompMutNuc)

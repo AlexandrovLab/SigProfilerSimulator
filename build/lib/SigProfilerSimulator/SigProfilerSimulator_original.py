@@ -129,7 +129,7 @@ def probability (chromosome=None, position=None, mutation=None, context=None, ge
 
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False, mask=None):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False):
 	'''
 	contexts -> [] must be a list
 	'''
@@ -183,9 +183,8 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		if ".DS_Store" in chromosomes:
 			chromosomes.remove(".DS_Store")
 
-		chromosomes = [x.split(".")[0] for x in chromosomes if len(x.split(".")[0]) < 8]
-		if genome == 'yeast':
-			chromosomes = sorted(chromosomes, key = lambda x: (['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI'].index(x)))
+		chromosomes = [x.split(".")[0] for x in chromosomes if len(x) < 8]
+	
 	if gender == 'female' or gender.upper() == 'FEMALE':
 		if "Y" in chromosomes:
 			chromosomes.remove('Y')
@@ -230,7 +229,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	############################## Pre-simulation Checks ##################################################################################################
 	# Ensures that the chromosome strings are saves properly:
 	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
-	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) < len(chromosomes):
+	if os.path.exists(chromosome_string_path) == False or len(os.listdir(chromosome_string_path)) <= len(chromosomes):
 		print("     The chromosome strings were not saved properly or have not been created yet. Please refer to the SigProfilerMatrixGenerator README for installation instructions:\n\thttps://github.com/AlexandrovLab/SigProfilerMatrixGenerator")
 		sys.exit()
 	# Ensures that the chromosome proportions are saved: 
@@ -458,7 +457,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
 		mut_dict_parallel = {k1:{k2:{k3:{k4:v4 for k4, v4 in v3.items() if k4 in chromosomes_parallel[i]} for k3, v3 in v2.items()} for k2, v2 in v1.items()} for k1, v1 in mut_dict.items()}
-		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], cushion, output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf, mask))
+		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], cushion, output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf))
 		results.append(r)
 	pool.close()
 	pool.join()
