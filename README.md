@@ -57,7 +57,8 @@ $ python3
       cushion=100:       [integer] Allowable cushion when simulating on the exome or targetted panel. Default is 100 base pairs
       region=None:       [string] Path to targetted region panel for simulated on a user-defined region. Default is whole-genome simulations.
       vcf=False		[boolean] Outputs simulated samples as vcf files with one file per iteration per sample. By default, the tool outputs all samples from an iteration into a single maf file.
-
+      mask=None	[string] Path to probability mask file. A mask file format is tab-separated with the following required columns: Chromosome, Start, End, Probability.
+                                              Note: Mask parameter does not support exome data where bed_file flag is set to true, and the following header fields are required: Chromosome, Start, End, Probability.
 
 **INPUT FILE FORMAT**
 
@@ -88,6 +89,8 @@ Released Jan 2011. Last updated March 2012. This genome was downloaded from ENSE
 
 rn6 (Rnor_6.0) INSDC Assembly GCA_000001895.4, Jul 2014. Released Jun 2015. Last updated Jan 2017. 
 This genome was downloaded from ENSEMBL database version 96.6.
+
+yeast (Saccharomyces cerevisiae S288C; assembly R64-2-1). Released Nov 2014. 
 
 **LOG FILES**
 
