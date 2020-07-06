@@ -62,7 +62,7 @@ $ python3
 
 **INPUT FILE FORMAT**
 
-This tool currently supports maf, vcf, simple text file, and ICGC formats. The user must provide variant data adhering to one of these four formats. If the users' files are in vcf format, each sample must be saved as a separate files. For an example input file, please download the simple text file "example.txt" from the following link: [example.txt] (https://osf.io/7rdkh/)
+This tool currently supports maf, vcf, simple text file, and ICGC formats. The user must provide variant data adhering to one of these four formats. If the users' files are in vcf format, each sample must be saved as a separate files. For an example input file, please download the simple text file "example.txt" from the following link: [example.txt](https://osf.io/7rdkh/)
 
 
 **Output File Structure**
