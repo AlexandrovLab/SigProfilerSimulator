@@ -53,7 +53,7 @@ $ python3
       chrom_based=False  [boolean] Maintains the same catalogs of mutations on a per chromosome basis.
       seed_file=None:       [string] Path to user defined seeds. One seed is required per processor. Uses a built in file by default
       noisePoisson=False:       [boolean] Add poisson noise to the simulations. Default is FALSE.     
-      noiseAWGN=0:       [integer] Add a noise dependent on a +/- allowance of noise (ex: noiseAWGN=5 allows +/-2.5\% of mutations for each mutation type). Default is 0 noise. 
+      noiseAWGN=0:       [Float] Add a noise dependent on a +/- allowance of noise (ex: noiseAWGN=5 allows +/-2.5\% of mutations for each mutation type). Default is 0 noise. 
       cushion=100:       [integer] Allowable cushion when simulating on the exome or targetted panel. Default is 100 base pairs
       region=None:       [string] Path to targetted region panel for simulated on a user-defined region. Default is whole-genome simulations.
       vcf=False		[boolean] Outputs simulated samples as vcf files with one file per iteration per sample. By default, the tool outputs all samples from an iteration into a single maf file.
@@ -62,7 +62,7 @@ $ python3
 
 **INPUT FILE FORMAT**
 
-This tool currently supports maf, vcf, simple text file, and ICGC formats. The user must provide variant data adhering to one of these four formats. If the users' files are in vcf format, each sample must be saved as a separate files. 
+This tool currently supports maf, vcf, simple text file, and ICGC formats. The user must provide variant data adhering to one of these four formats. If the users' files are in vcf format, each sample must be saved as a separate files. For an example input file, please download the simple text file "example.txt" from the following link: [example.txt] (https://osf.io/7rdkh/)
 
 
 **Output File Structure**

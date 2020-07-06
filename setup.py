@@ -13,7 +13,7 @@ def readme():
 		long_description = f.read()
 		return(long_description)
 		
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 
 def write_version_py(filename='SigProfilerSimulator/version.py'):
 	# Copied from numpy setup.py

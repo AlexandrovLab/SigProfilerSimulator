@@ -2,10 +2,8 @@ MANIFEST.in
 README.md
 setup.py
 SigProfilerSimulator/SigProfilerSimulator.py
-SigProfilerSimulator/SigProfilerSimulator_original.py
 SigProfilerSimulator/__init__.py
 SigProfilerSimulator/mutational_simulator.py
-SigProfilerSimulator/mutational_simulator_original.py
 SigProfilerSimulator/seeds.txt
 SigProfilerSimulator/version.py
 SigProfilerSimulator.egg-info/PKG-INFO

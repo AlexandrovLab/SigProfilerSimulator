@@ -279,6 +279,17 @@ def random_base (limit_start, limit_end):
 
 	return (('ATCG')[random.randint(limit_start,limit_end)])
 
+def random_base_sub (bases):
+	'''
+	Returns a random nucleotide.
+
+	Inputs: None
+
+	Returns: A, C, G, or T
+	'''
+
+	return ((bases)[random.randint(0, len(bases)-1)])
+
 # @profile
 def bed_ranges (chrom_sim, bed_file, cushion):
 	'''
@@ -1707,6 +1718,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										indel_types[refbias][(indel[0]+indel[3] + indel[2] + bias)].append(indel[1])
 
 							# Repeats simulation until all mutations are assigned
+							# print(chrom, mutationsCountTSB, indel_types, indel_types_O)
 							for tsb_type in tsb:
 								u = 0
 								while (any(mutationsCountTSB[tsb_type]) == True):
@@ -1876,12 +1888,12 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 															seq_final += tsb_ref[sequence[r]][1]
 
 														if vcf:
-															print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
+															print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
 														else:
 															print ('\t'.join([".",".","sims",genome,chrom,str(random_number+1),str(random_number+1),strand,".","ID",seq_final,".",tsb_ref[sequence[random_number-1]][1],".\t.",sample+"_"+str(simulations),complete_indel]), file=out_vcf)
 
 														if seqInfo:
-															print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
+															print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
 
 														if not overlap:
 															for z in range (random_number-1, random_number+i+1,1):
@@ -1927,12 +1939,12 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 															seq_final += tsb_ref[sequence[r]][1]
 
 														if vcf:
-															print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
+															print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
 														else:	
 															print ('\t'.join([".",".","sims",genome,chrom,str(random_number+1),str(random_number+1),strand,".","ID",tsb_ref[sequence[random_number-1]][1],".",seq_final,".\t.",sample+"_"+str(simulations), complete_indel]), file=out_vcf)
 
 														if seqInfo:
-															print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
+															print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
 
 														if not overlap:
 															for z in range (random_number-1, random_number+i+1,1):
@@ -2036,12 +2048,12 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 																seq_final += tsb_ref[sequence[r]][1]
 
 															if vcf:
-																print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
+																print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
 															else:
 																print ('\t'.join([".",".","sims",genome,chrom,str(random_number+1),str(random_number+1),strand,".","ID",seq_final,".",tsb_ref[sequence[random_number-1]][1],".\t.",sample+"_"+str(simulations), complete_indel]), file=out_vcf)
 															
 															if seqInfo:
-																print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
+																print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
 															
 															if not overlap:
 																for z in range (random_number-1, random_number+i+1,1):
@@ -2111,7 +2123,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 																seq_final += tsb_ref[sequence[r]][1]
 
 															if vcf:
-																print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
+																print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", seq_final,"\t",tsb_ref[sequence[random_number-1]][1],"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
 															else:	
 																print ('\t'.join([".",".","sims",genome,chrom,str(random_number+1),str(random_number+1),strand,".","ID",seq_final,".",tsb_ref[sequence[random_number-1]][1],".\t.",sample+"_"+str(simulations), complete_indel]), file=out_vcf)
 											
@@ -2148,9 +2160,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										mutationsCountTSB[tsb_type] = {}
 									while (any(indel_types_O[tsb_type]) == True):
 										if u > 1000000:
-											# logging.info(sample + " " + mutationsCount)
-											# print (sample, mutationsCount, chrom)
-											# print(indel_types_O[tsb_type])
 											indel_types_O[tsb_type] = {}
 											mutationsCountTSB[tsb_type] = {}
 											u = 0
@@ -2189,30 +2198,27 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 												strand = "-"
 										else:
 											strand = "Q"
-											break
+											# break
 
 										stop_flag = False
 										for indels_O in indel_types_O[tsb_type]:
-
-											# For INDELs of length 1, if the subType for the mutation does not match
-											# the desired INDEL, break and find a new position
-											if indels_O[0] == '1':
-												if indels_O[2] != subType:
-													break
-
-											# # Assigns the original naming convention
-											# complete_indel = indels_O[-1] + ':' + indels_O[0] + ':Ins:' + indels_O[2] + ':' + indels_O[1]
-
 											bias = tsb_ref[sequence[random_number]][0]
+
 											# Randomly assigns a base for insertions of length 1 based upon
 											# the subType at the chosen position in the chromosome.
 											potential_sequence = ''
 											if int(indels_O[0]) == 1:
-												if subType == 'T':
-													potential_sequence += random_base(0,1)
+												if tsb_ref[sequence[random_number]][1] == 'T':
+													potential_sequence += random_base_sub('ACG')
+												elif tsb_ref[sequence[random_number]][1] == 'A':
+													potential_sequence += random_base_sub('TCG')
+												elif tsb_ref[sequence[random_number]][1] == 'C':
+													potential_sequence += random_base_sub('ATG')												
 												else:
-													potential_sequence += random_base(2,3)
+													potential_sequence += random_base_sub('ACT')
 
+												if potential_sequence != indels_O[2] and revcompl(potential_sequence) != indels_O[2]:
+													continue
 											# Randomly chooses bases until the insertion length equals the desired
 											# INDEL length
 											else:
@@ -2222,21 +2228,22 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 											if bias != 'N':
 												if not bool(re.match("^[CT]*$", potential_sequence)) and not bool(re.match("^[GA]*$", potential_sequence)):
 													bias = 'Q'
-
 												else:
 													if bool(re.match("^[GA]*$", potential_sequence)):
-														bias = revbias(bias)	
-											if tsb_type != bias:
+														bias = revbias(bias)
+
+
+											if bias not in indels_O[-1]:#tsb_type != bias:
 												continue
 											# Ensures that the bases are known and that there are no repeats around the insertion
 											try:
 												seq = ''
-												for r in range (random_number-int(indels_O[0]),random_number,1):
+												for r in range (random_number-int(indels_O[0])+1,random_number+1,1):
 													if r > len(sequence):
 														break
 													seq += tsb_ref[sequence[r]][1]
 												seq2 = ''
-												for r in range (random_number,random_number+int(indels_O[0]),1):
+												for r in range (random_number+1,random_number+int(indels_O[0])+1,1):
 													if r > len(sequence):
 														break
 													seq2 += tsb_ref[sequence[r]][1]
@@ -2244,7 +2251,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 												break
 
 											if "N" not in seq:
-												if seq2 != potential_sequence and tsb_ref[sequence[random_number-int(indels_O[0])]][1] != potential_sequence:
+												if seq2 != potential_sequence and seq != potential_sequence:
 													if not overlap:
 														for p in range(random_number, random_number+i, 1):
 															if p in recorded_positions:
@@ -2256,12 +2263,12 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 													complete_indel = bias + ':' + indels_O[0] + ':Ins:' + indels_O[2] + ':' + indels_O[1]
 
 													if vcf:
-														print (''.join([chrom,"\t",str(random_number),"\t",sample,"\t", tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
+														print (''.join([chrom,"\t",str(random_number+1),"\t",sample,"\t", tsb_ref[sequence[random_number-1]][1],"\t",tsb_ref[sequence[random_number-1]][1]+potential_sequence,"\t.\tSimulations\t",genome,"\t",complete_indel,"\t",strand]), file=out_vcf)
 													else:	
 														print ('\t'.join([".",".","sims",genome,chrom,str(random_number+1),str(random_number+1),strand,".","ID",tsb_ref[sequence[random_number-1]][1],".",tsb_ref[sequence[random_number-1]][1]+potential_sequence,".\t.",sample+"_"+str(simulations), complete_indel]), file=out_vcf)
 													
 													if seqInfo:
-														print(''.join([sample, "\t",chrom,  "\t", str(random_number),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
+														print(''.join([sample, "\t",chrom,  "\t", str(random_number+1),  "\t",complete_indel, "\t", strand + "1"]), file=outSeq)
 													if not overlap:
 														for z in range (random_number-1, random_number+int(indels_O[0])+1,1):
 															recorded_positions.add(z)
@@ -2274,7 +2281,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 														indel_lengths[tsb_type].remove(int(indels_O[0]))
 														repeat_lengths[tsb_type].remove(int(indels_O[1]))
 														del indel_types_O[tsb_type][indels_O]
-													break
+														# break
 
 													# Updates the chromosome with the current INDEL if desired
 													if updating:
