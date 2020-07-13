@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: SigProfilerSimulator
-Version: 1.0.7
+Version: 1.0.8
 Summary: SigProfiler simulator tool
 Home-page: UNKNOWN
 Author: Erik Bergstrom
@@ -70,7 +70,7 @@ Description: [![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https:
         
         **INPUT FILE FORMAT**
         
-        This tool currently supports maf, vcf, simple text file, and ICGC formats. The user must provide variant data adhering to one of these four formats. If the users' files are in vcf format, each sample must be saved as a separate files. For an example input file, please download the simple text file "example.txt" from the following link: [example.txt] (https://osf.io/7rdkh/)
+        This tool currently supports maf, vcf, simple text file, and ICGC formats. The user must provide variant data adhering to one of these four formats. If the users' files are in vcf format, each sample must be saved as a separate files. For an example input file, please download the simple text file "example.txt" from the following link: [example.txt](https://osf.io/7rdkh/)
         
         
         **Output File Structure**

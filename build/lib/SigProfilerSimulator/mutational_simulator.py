@@ -644,7 +644,10 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 
 					# Pulls a distribution for randomly assigning left over mutations based upon the nucleotide distribution
 					# across the genome
-					probs = nuc_probs[base_nuc]
+					try:
+						probs = nuc_probs[base_nuc]
+					except:
+						probs = nuc_probs[revcompl(base_nuc)]
 					if len(probs) != len(chromosomes):
 						probs = probs[:len(chromosomes)]
 
