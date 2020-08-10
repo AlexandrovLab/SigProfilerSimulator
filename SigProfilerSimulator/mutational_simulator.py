@@ -94,7 +94,6 @@ def noise (samples, noisePoisson=False, noiseAWGN=0):
 		return(samples)
 
 
-# @profile
 def combine_simulation_files (iterations, output_path, chromosomes, samples=[], bed=False, exome=False, vcf=False):
 	'''
 	Combines the separate sample_iteration_chromosome simulated files into a 
@@ -115,25 +114,22 @@ def combine_simulation_files (iterations, output_path, chromosomes, samples=[], 
 	if vcf:
 		for sample in samples:
 			for i in iterations:
-				with open(output_path + sample + "/" + sample + "_" + str(i) + ".vcf", "wb") as f:
+				with open(output_path + sample + "/" + sample + "_" + str(i) + ".vcf", "w") as f:
+					print("\t".join(["#Chrom","Pos","Sample", "Ref","Alt",".","Simulations","Genome","matGenClass","Strand"]), file=f)
+				with open(output_path + sample + "/" + sample + "_" + str(i) + ".vcf", "ab") as f:
 					for chrom in chromosomes:
-						if True:
-
-
-						# try:
-							with open(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf", "rb") as fd:
-								shutil.copyfileobj(fd, f)
-							os.remove(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf")
-						# except:
-						# 	pass
-
+						with open(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf", "rb") as fd:
+							shutil.copyfileobj(fd, f)
+						os.remove(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf")
 
 	else:		
 		extension = ''
 		if bed and not exome:
 			extension = "_BED"
 		for i in iterations:
-			with open(output_path + str(i) + ".maf", "wb") as f:
+			with open(output_path + str(i) + ".maf", "w") as f:
+				print ('\t'.join(["Hugo_symbol","Entrez_gene_ID","Center","Genome","Chrom","Start_position","End_position","Strand","Variant_Classification","Variant_Type", "Reference_Allele","Tumor_Seq_Allele1","Tumor_Seq_Allele2","dbSNP_RS","dbSNP_Val_Status","Tumor_Sample_Barcode", "matGenClass"]), file=f)
+			with open(output_path + str(i) + ".maf", "ab") as f:
 				for chrom in chromosomes:
 					try:
 						with open(output_path + str(i) + "_" + chrom + extension + ".maf",'rb') as fd:
@@ -232,7 +228,6 @@ def chrom_proportions_BED (bed_file, chrom_path, genome, chromosomes):
 	with open (chrom_path + "BED_" + genome + "_proportions.txt", 'wb') as out:
 		pickle.dump(chromosomeProbs, out)
 
-# @profile
 def update_chromosome ( chrom, location, bases, context):
 	'''
 	Updates a given chromosome or sequence based upon a given context.
@@ -267,7 +262,6 @@ def update_chromosome ( chrom, location, bases, context):
 			chromosome[location+i] = bases[i]
 	return(chromosome)
 
-# @profile
 def random_base (limit_start, limit_end):
 	'''
 	Returns a random nucleotide.
@@ -290,7 +284,6 @@ def random_base_sub (bases):
 
 	return ((bases)[random.randint(0, len(bases)-1)])
 
-# @profile
 def bed_ranges (chrom_sim, bed_file, cushion):
 	'''
 	Returns a list containing the positions corresponding with the desired
@@ -566,15 +559,6 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 	out = open(log_file, 'a')
 	mutation_tracker = {}
 
-	### debugging ###
-	# random_sample = random.sample(list(samples['384']),1)[0]
-	# a = pd.DataFrame(0, index=list(samples['384'][random_sample].keys()), columns=chromosomes)
-	# chrom_1_track_plus = 0
-	# chrom_1_track_neg = 0
-	# probs = [0.038016941,0.104438712,0.069723876,0.058404333,0.037029061,0.044805745,0.051422922,0.045144672,0.032261934,0.041033276,0.039722145,0.058713679,0.053670361,0.017297013,0.032746978,0.034216936,0.043138742,0.059986665,0.01449255,0.065151069,0.026191246,0.010340946,0.022050197]
-	# probs = [0.05328559,0.079445171,0.084002805,0.06869521,0.066178886,0.062664235,0.059031866,0.054785456,0.050389775,0.042368533,0.046308117,0.04624282,0.046014254,0.033709769,0.03113531,0.028809649,0.027818706,0.027434474,0.026327851,0.019681034,0.020984617,0.012380337,0.012305537]
-	
-	#################
 	for context in nucleotide_context_files:
 		mutation_tracker[context] = {}
 		sim = None
@@ -588,18 +572,19 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 			sim = 2
 		elif context == '1536':
 			sim = 3
-		elif context == '192' or context == '384':
+		elif context == '192' or context == '384' or context == '288':
 			sim = 4 
 		elif context == 'DINUC' or context == 'DBS':
 			sim = 5
 		elif context == 'INDEL' or context == 'ID':
 			sim = 6
-		elif context == '3072' or context == '6144':
+		elif context == '3072' or context == '6144' or context == '4608':
 			sim = 7
 		elif context == 'DBS186' or context == '186':
 			sim = 8
 		elif context == 'ID415' or context == '415':
 			sim = 9
+		
 		
 		# Allocates mutations differently from INDEL simulation
 		if sim != 6 and sim != 9:
@@ -711,8 +696,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 											if mutation_tracker[context][sample][nuc][random_chromosome] != 0:
 												mutation_tracker[context][sample][nuc][random_chromosome] -= 1
 												nuc_count -= 1
-					# for chrom in chromosomes:
-					# 	a.at[nuc, chrom] += mutation_tracker[context][sample][nuc][chrom]
+
 
 		# Allocates mutations for the INDEL simulation based upon the size
 		# of each chromosome in relation to the overall size of the genome.
@@ -766,7 +750,6 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 										if mutation_tracker[context][sample][nuc][random_chromosome] != 0:
 											mutation_tracker[context][sample][nuc][random_chromosome] -= 1
 											nuc_count -= 1
-
 
 	print ("Mutations have been distributed. Starting simulation now...", file=out)
 	print ("Mutations have been distributed. Starting simulation now...")
@@ -862,7 +845,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 		# Only for TSB simulations, opens the transcriptional info strings:
 		chrom_bias = {'TU':[],'B':[],'N':[]}
 		chrom_bias_lengths = {'TU':[],'B':[],'N':[]}
-		if '192' in contexts or '3072' in contexts or '384' in contexts or '6144' in contexts or 'DBS186' in contexts or '24' in contexts or 'ID415' in contexts:
+		if '192' in contexts or '3072' in contexts or '384' in contexts or '6144' in contexts or 'DBS186' in contexts or '24' in contexts or 'ID415' in contexts or '288' in contexts or '4608' in contexts:
 			chromosome_string_path, ref_dir = matRef.reference_paths(genome)
 			with open (ref_dir + '/references/chromosomes/tsb_BED/' + genome + '/' + chrom + "_BED_TSB.txt") as f:
 				next(f)
@@ -890,11 +873,19 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 						else:
 							chrom_bias_lengths['TU'].append(chrom_bias_lengths['TU'][-1] + (end-start))
 					elif range_bias == 3:
-						chrom_bias['B'].append([start, end])
-						if chrom_bias_lengths['B'] == []:
-							chrom_bias_lengths['B'].append(end-start)
+						if "288" in contexts or '4608' in contexts:
+							chrom_bias['TU'].append([start, end])
+							if chrom_bias_lengths['TU'] == []:
+								chrom_bias_lengths['TU'].append(end-start)
+							else:
+								chrom_bias_lengths['TU'].append(chrom_bias_lengths['TU'][-1] + (end-start))
+
 						else:
-							chrom_bias_lengths['B'].append(chrom_bias_lengths['B'][-1] + (end-start))
+							chrom_bias['B'].append([start, end])
+							if chrom_bias_lengths['B'] == []:
+								chrom_bias_lengths['B'].append(end-start)
+							else:
+								chrom_bias_lengths['B'].append(chrom_bias_lengths['B'][-1] + (end-start))
 
 		for sample in sample_names:
 			simulations = simulation_number
@@ -948,7 +939,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 							sim = 3
 							mut_start = 2
 							mut_save = 3
-						elif context == '192' or context == '384':
+						elif context == '192' or context == '384' or context == '288':
 							sim = 4 
 							mut_start = 1
 							mut_save = 4
@@ -960,7 +951,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 							sim = 6
 							mut_save = 0
 							mut_start = 0
-						elif context == '3072' or context == '6144':
+						elif context == '3072' or context == '6144' or context == '4608':
 							sim = 7
 							mut_save = 5
 							mut_start = 2
@@ -2472,12 +2463,18 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 										sequence[random_number+i] = int(new_bases[i])
 									location_range = len(sequence)
 
-						# Simulates TSB [24, 384, 6144]
+						# Simulates TSB [24, 288, 384, 6144]
 						else:
-							tsb = ['TU','B','N']
-							mutationsCountTSB = {'TU':{},'B':{},'N':{}}
-							base_keys = {'T':[],'U':[],'B':[],'N':[]}
-							nuc_keys_tsb = {'T':[],'U':[],'B':[],'N':[]}
+							if '288' in contexts or '4608' in contexts:
+								tsb = ['TU','N']
+								mutationsCountTSB = {'TU':{},'N':{}}
+								base_keys = {'T':[],'U':[],'N':[]}
+								nuc_keys_tsb = {'T':[],'U':[],'N':[]}
+							else:
+								tsb = ['TU','B','N']
+								mutationsCountTSB = {'TU':{},'B':{},'N':{}}
+								base_keys = {'T':[],'U':[],'B':[],'N':[]}
+								nuc_keys_tsb = {'T':[],'U':[],'B':[],'N':[]}
 							if sim == 8:
 								mutationsCountTSB['Q'] = {}
 								tsb.append('Q')
@@ -2567,6 +2564,9 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									# Only for TSB simulations: organizes nucleotide references
 									# nuc_bias = tsb_type
 									nuc_bias = tsb_ref[sequence[random_number]][0]
+									if ('288' in contexts or '4608' in contexts) and nuc_bias == 'B':
+										nuc_bias = random.choice(('T', 'U'))
+
 
 									if sim == 8:
 										mutNuc = ''.join([tsb_ref[base][1] for base in sequence[random_number:random_number+2]])
@@ -2575,7 +2575,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									
 									mutNuc = nuc_bias + mutNuc
 									revCompMutNuc = revbias(nuc_bias) + revcompl(mutNuc[1:])  
-
 									if tsb_type == 'Q':
 										if mutNuc in dinuc_non_tsb or revCompMutNuc in dinuc_non_tsb:
 											l -= 1
@@ -2585,13 +2584,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									# it to the output file and update the dictionary
 									bases = None
 									if mutNuc in base_keys[nuc_bias]:
-										# if random_range not in ranges:
-										# 	ranges[random_range] = 1
-										# else:
-										# 	ranges[random_range] += 1
 										nucIndex = base_keys[nuc_bias].index(mutNuc)
 										if nuc_keys_tsb[nuc_bias][nucIndex] in mutationsCountTSB[tsb_type] and mutationsCountTSB[tsb_type][nuc_keys_tsb[nuc_bias][nucIndex]] != 0:		
-
 											# Exclude mutations if new position overlaps an existing mutation or if it is within
 											# the user-specified spacing (default=1bp to exclude DBSs)
 											if not overlap:
@@ -2634,7 +2628,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 											mutationsCountTSB[tsb_type][nuc_keys_tsb[nuc_bias][nucIndex]] -= 1
 
 											l = 0
-							
 											if mutationsCountTSB[tsb_type][nuc_keys_tsb[nuc_bias][nucIndex]] == 0:
 												del mutationsCountTSB[tsb_type][nuc_keys_tsb[nuc_bias][nucIndex]]
 												del nuc_keys_tsb[nuc_bias][nucIndex]
@@ -2643,12 +2636,7 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									# If the reverse complement of the nucleotide context is desired,
 									# write it to the output file as the reverse complement.
 									elif revCompMutNuc in base_keys[revbias(nuc_bias)]:
-										# if random_range not in ranges:
-										# 	ranges[random_range] = 1
-										# else:
-										# 	ranges[random_range] += 1
 										rev_tsb_type = revbias(nuc_bias)
-
 										nucIndex = base_keys[rev_tsb_type].index(revCompMutNuc)
 										if nuc_keys_tsb[rev_tsb_type][nucIndex] in mutationsCountTSB[tsb_type] and mutationsCountTSB[tsb_type][nuc_keys_tsb[rev_tsb_type][nucIndex]] != 0:
 										
@@ -2693,7 +2681,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 											recorded_positions.add(random_number)
 											mutationsCountTSB[tsb_type][nuc_keys_tsb[rev_tsb_type][nucIndex]] -= 1
 											l = 0
-
 											if mutationsCountTSB[tsb_type][nuc_keys_tsb[rev_tsb_type][nucIndex]] == 0:
 												del mutationsCountTSB[tsb_type][nuc_keys_tsb[rev_tsb_type][nucIndex]]
 												del nuc_keys_tsb[rev_tsb_type][nucIndex]
@@ -2713,14 +2700,6 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 					outSeq.flush()
 					outSeq.close()
 
-		# with open("/Users/ebergstr/Desktop/" + chrom + "_tsbStats.txt", "w") as out_stats:
-		# 	print(len(ranges), file=out_stats)
-		# 	for x, y in ranges.items():
-		# 		if y > 1:
-		# 			print(str(x) + "\t" + str(y) + "\t" + str(chrom_range[x]), file=out_stats)
-
-			# a = [x + ":" + str(y) for x,y in ranges.items() if y >1]
-			# print(a, chrom, len(a), )
 
 		out_log = open(log_file, 'a')
 		print("Chromosome " + chrom + " done", file=out_log)

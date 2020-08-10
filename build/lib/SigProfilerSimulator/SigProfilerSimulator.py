@@ -330,6 +330,14 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			else:
 				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
 
+		if context == "288":
+			nucleotide_context_file = nucleotide_context_file.split("_")
+			nucleotide_context_file[4] = "384"
+			nucleotide_context_file = "_".join([x for x in nucleotide_context_file])
+		elif context == '4608':
+			nucleotide_context_file = nucleotide_context_file.split("_")
+			nucleotide_context_file[4] = "6144"
+			nucleotide_context_file = "_".join([x for x in nucleotide_context_file])			
 		nucleotide_context_files[context] = nucleotide_context_file
 		if os.path.exists(nucleotide_context_file) == True and bed and not region:
 			os.remove(nucleotide_context_file)
@@ -392,9 +400,6 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			if not os.path.exists(output_path + sample + "/"):
 				os.makedirs(output_path + sample + "/")
 
-	# Add desired noise if applicable:
-	# if noisePoisson or noiseAWGN:
-	# 	mut_dict = simScript.noise(mut_dict, noisePoisson, noiseAWGN)
 
 	# Set-up parallelization:
 	processors = mp.cpu_count()
@@ -430,7 +435,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		seed_file = ref_dir + "/SigProfilerSimulator/seeds.txt"
 	with open(seed_file) as f:
 		for i in range (0, max_seed, 1):
-			new_seed = int(f.readline().strip()) + time.time()
+			new_seed = int(int(f.readline().strip()) / time.time())
 			seeds.append(new_seed)
 			log_out.write("Process " + str(i) + ": " + str(new_seed) + "\n")
 
