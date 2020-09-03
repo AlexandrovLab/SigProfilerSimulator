@@ -370,6 +370,8 @@ def mutation_preparation_chromosomes (catalogue_files, matrix_path, chromosomes,
 						samples[context][sample][nuc] = int(mutCount)
 					sample_index += 1  
 		for chrom in chromosomes:
+			if not os.path.exists(catalogue_files[context] + ".chr" + chrom):
+				continue
 			with open(catalogue_files[context] + ".chr" + chrom) as f:
 				next(f)
 				for lines in f:
