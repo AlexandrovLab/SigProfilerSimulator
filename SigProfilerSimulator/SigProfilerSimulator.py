@@ -129,7 +129,7 @@ def probability (chromosome=None, position=None, mutation=None, context=None, ge
 
 
 
-def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False, mask=None):
+def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, simulations=1, updating=False, bed_file=None, overlap=False, gender='female', seqInfo=False, chrom_based=False, seed_file=None, spacing=1, noisePoisson=False, noiseUniform=0, cushion=100, region=None, vcf=False, mask=None):
 	'''
 	contexts -> [] must be a list
 	'''
@@ -151,9 +151,9 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	# Asigns a species based on the genome parameter
 	species = None
-	if genome.upper() == 'GRCH37' or genome.upper() == 'GRCH38': 
+	if genome.upper() == 'GRCH37' or genome.upper() == 'GRCH38' or 'GRCH37' in  genome.upper() or 'GRCH38' in  genome.upper(): 
 		species = "homo_sapiens"
-	elif genome.upper() == 'MM10' or genome.upper() == 'MM9': 
+	elif genome.upper() == 'MM10' or genome.upper() == 'MM9'  or 'MM9' in genome.upper(): 
 		species = "mus_musculus"
 	else:
 		species = "custom"
@@ -220,7 +220,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	log_out.write("numpy version: "+np.__version__+"\n")
 	
 	log_out.write("\n-------Vital Parameters Used for the execution -------\n")
-	log_out.write("Project: {}\nGenome: {}\nInput File Path: {}\ncontexts: {}\nexome: {}\nsimulations: {}\nupdating: {}\nbed_file: {}\noverlap: {}\ngender: {}\nseqInfo: {}\nchrom_based: {}\nseed_file: {}\n".format(project, project_path, genome, contexts, str(exome), str(simulations),  str(updating), str(bed_file), str(overlap), gender, str(seqInfo), str(chrom_based), str(seed_file)))
+	log_out.write("Project: {}\nGenome: {}\nInput File Path: {}\ncontexts: {}\nexome: {}\nsimulations: {}\nupdating: {}\nbed_file: {}\noverlap: {}\ngender: {}\nseqInfo: {}\nchrom_based: {}\nseed_file: {}\n".format(project, genome, project_path, contexts, str(exome), str(simulations),  str(updating), str(bed_file), str(overlap), gender, str(seqInfo), str(chrom_based), str(seed_file)))
 	log_out.write("\n-------Date and Time Data------- \n")
 	tic = datetime.datetime.now()
 	log_out.write("Date and Clock time when the execution started: "+str(tic)+"\n\n\n")
@@ -319,6 +319,10 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		ref_path = '/'.join([x for x in ref_path])
 		nucleotide_context_file = ref_path + '/context_distributions/'
 		
+		# genome_original = genome
+		# if 'havana' in genome:
+		# 	genome = genome.split("_")[0]
+
 		if bed_file:
 			if region:
 				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
@@ -463,7 +467,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
 		mut_dict_parallel = {k1:{k2:{k3:{k4:v4 for k4, v4 in v3.items() if k4 in chromosomes_parallel[i]} for k3, v3 in v2.items()} for k2, v2 in v1.items()} for k1, v1 in mut_dict.items()}
-		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], cushion, output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf, mask))
+		r = pool.apply_async(simScript.simulator, args=(sample_names, mut_dict_parallel, chromosome_string_path, tsb_ref, tsb_ref_rev, simulations, seeds[i], cushion, output_path, updating, chromosomes_parallel[i], project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseUniform, vcf, mask))
 		results.append(r)
 	pool.close()
 	pool.join()

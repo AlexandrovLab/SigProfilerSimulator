@@ -76,20 +76,21 @@ def probability_mask (chrom, mask):
 			sys.exit()
 		return(maskRanges, maskProbs)
 
-def noise (samples, noisePoisson=False, noiseAWGN=0):
+def noise (samples, noisePoisson=False, noiseUniform=0):
 	if noisePoisson:
 		for mut in samples:
 			noise_value = np.random.poisson(samples[mut])
 			samples[mut] = noise_value
 		return(samples)
 
-	if noiseAWGN != 0:
+	if noiseUniform != 0:
 		for mut in samples:
-			lower_bound = samples[mut] - int(noiseAWGN/2)
-			upper_bound = samples[mut] + int(noiseAWGN/2)
+			lower_bound = samples[mut] - (int((noiseUniform/200)*samples[mut]))
+			upper_bound = samples[mut] + (int((noiseUniform/200)*samples[mut]))
 			noise_value = int(np.random.uniform(lower_bound, upper_bound))
 			if noise_value < 0:
 				noise_value = 0
+			# print(samples[mut], lower_bound, upper_bound, noise_value)
 			samples[mut] = noise_value
 		return(samples)
 
@@ -639,6 +640,8 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 						probs = probs[:len(chromosomes)]
 
 
+					probs = [x/sum(probs) for x in probs]
+
 					# Instantiate the mutation dictionary for the current nucleotide
 					if sample not in mutation_tracker[context]:
 						mutation_tracker[context][sample] = {nuc:{}}
@@ -764,7 +767,7 @@ def mut_tracker (sample_names, samples, reference_sample, nucleotide_context_fil
 	
 	
 	
-def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, cushion, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseAWGN, vcf, mask):
+def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, tsb_ref_rev, simulation_number, seed, cushion, output_path, updating, chromosomes, project, genome, bed, bed_file, contexts, overlap, project_path, seqInfo, log_file, spacing, noisePoisson, noiseUniform, vcf, mask):
 	'''
 	Simulates mutational signatures in human cancer in an unbiased fashion. The function
 		requires a list of sample names, a dictionary of the number of mutations for each
@@ -982,8 +985,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 									left_over_mutations[sample][simulations][context][nuc] = {}
 
 						# Add in noise:
-						if noisePoisson or noiseAWGN != 0:
-							mutationsCount = noise(mutationsCount, noisePoisson, noiseAWGN)
+						if noisePoisson or noiseUniform != 0:
+							mutationsCount = noise(mutationsCount, noisePoisson, noiseUniform)
 
 
 
