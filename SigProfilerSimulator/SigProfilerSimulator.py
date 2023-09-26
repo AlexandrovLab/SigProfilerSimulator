@@ -21,7 +21,7 @@ import platform
 import pandas as pd
 import SigProfilerSimulator as sigSim
 import SigProfilerMatrixGenerator as sig
-from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGenerator as matRef
+from SigProfilerMatrixGenerator.scripts import MutationMatrixGenerator as matRef
 from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGeneratorFunc as matGen
 from . import mutational_simulator as simScript
 from SigProfilerMatrixGenerator.scripts import save_context_distribution as context_dist
