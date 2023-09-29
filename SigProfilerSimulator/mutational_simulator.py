@@ -17,7 +17,7 @@ import datetime
 import shutil
 import bisect
 import numpy as np
-from SigProfilerMatrixGenerator.scripts import SigProfilerMatrixGenerator as matRef
+from SigProfilerMatrixGenerator.scripts import MutationMatrixGenerator as matRef
 # from memory_profiler import profile
 # from pympler.tracker import SummaryTracker
 import pandas as pd

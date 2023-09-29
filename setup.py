@@ -13,7 +13,7 @@ def readme():
 		long_description = f.read()
 		return(long_description)
 		
-VERSION = '1.1.4'
+VERSION = '1.1.5'
 
 def write_version_py(filename='SigProfilerSimulator/version.py'):
 	# Copied from numpy setup.py
@@ -40,8 +40,8 @@ setup(name='SigProfilerSimulator',
 		license='UCSD',
 		packages=find_packages(),
 		install_requires =[
-			"SigProfilerMatrixGenerator>=1.1.20",
-			"sigProfilerPlotting>=1.1.8",
+			"SigProfilerMatrixGenerator>=1.2.18",
+			"sigProfilerPlotting>=1.3.16",
 			"fastrand>=1.2"],
 		include_package_data=True,
 		zip_safe=False)
