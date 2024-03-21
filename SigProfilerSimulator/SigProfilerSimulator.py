@@ -336,7 +336,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 		if context == "288":
 			nucleotide_context_file = nucleotide_context_file.split("_")
-			nucleotide_context_file[4] = "384"
+			nucleotide_context_file[5] = "384"
 			nucleotide_context_file = "_".join([x for x in nucleotide_context_file])
 		elif context == '4608':
 			nucleotide_context_file = nucleotide_context_file.split("_")
