@@ -15,7 +15,7 @@ def readme():
         return long_description
 
 
-VERSION = "1.1.6"
+VERSION = "1.2.0"
 
 
 def write_version_py(filename="SigProfilerSimulator/version.py"):
@@ -24,6 +24,7 @@ def write_version_py(filename="SigProfilerSimulator/version.py"):
 # THIS FILE IS GENERATED FROM SIGPROFILERSIMULATOR SETUP.PY
 short_version = '%(version)s'
 version = '%(version)s'
+Update = 'v1.2.0: Require Pandas and Numpy >= 2.0.0 and Python >= 3.9'
 	
 	"""
     fh = open(filename, "w")
@@ -49,9 +50,10 @@ setup(
     author_email="ebergstr@eng.ucsd.edu",
     license="UCSD",
     packages=find_packages(),
+    python_requires=">=3.9",
     install_requires=[
-        "SigProfilerMatrixGenerator>=1.2.25",
-        "sigProfilerPlotting>=1.3.21",
+        "SigProfilerMatrixGenerator>=1.3.0",
+        "sigProfilerPlotting>=1.4.0",
         "fastrand>=1.2",
     ],
     include_package_data=True,
