@@ -153,7 +153,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	species = None
 	if genome.upper() == 'GRCH37' or genome.upper() == 'GRCH38' or 'GRCH37' in  genome.upper() or 'GRCH38' in  genome.upper(): 
 		species = "homo_sapiens"
-	elif genome.upper() == 'MM10' or genome.upper() == 'MM9'  or 'MM9' in genome.upper(): 
+	elif genome.upper() == 'MM10' or genome.upper() == 'MM9'  or 'MM9' in genome.upper() or 'MM10' in genome.upper() or genome.upper() == "MM39" or "MM39" in genome.upper():
 		species = "mus_musculus"
 	else:
 		species = "custom"
