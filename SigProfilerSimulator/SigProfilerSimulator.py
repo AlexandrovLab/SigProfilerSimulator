@@ -154,6 +154,61 @@ def probability(
         pass
 
 
+def setup_seeds(project_path, seed_file=None):
+    """
+    Sets up seeds either by reading from an existing seed file or generating a new one
+    if no seed file is provided.
+
+    Args:
+        project_path (str): Path to the project directory.
+        seed_file (str, optional): Path to an existing seed file. If None, a new seed file is generated in the output folder.
+
+    Returns:
+        list: A list of unique seeds.
+    """
+
+    # Step 1: If seed_file is None, generate a new seed file in the output folder.
+    if seed_file is None:
+        # Create the output folder if it doesn't exist
+        output_folder = os.path.join(project_path, "output")
+        os.makedirs(output_folder, exist_ok=True)  # Ensure the output folder exists
+
+        # Define the seed file path
+        seed_file = os.path.join(output_folder, "Simulator_seeds.txt")
+
+        # Generate a new master seed and write it to the seed file
+        master_seed = np.random.SeedSequence().entropy
+        with open(seed_file, "w") as f:
+            f.write(f"{master_seed}\n")  # Store the master seed in the file
+
+    else:
+        # Step 2: If seed_file is provided, use the provided seed file path
+
+        # Check if the seed file exists
+        if os.path.exists(seed_file):
+            with open(seed_file, "r") as f:
+                master_seed = int(
+                    f.readline().strip()
+                )  # Read the master seed from the file
+        else:
+            # If the seed file does not exist, raise an error
+            raise FileNotFoundError(
+                f"Seed file {seed_file} not found. Please provide a valid seed file."
+            )
+
+    # Step 3: Generate a list of unique seeds using the master seed
+    seed_seq = np.random.SeedSequence(master_seed)
+    num_processes = mp.cpu_count()  # Get the number of available processors
+
+    # Spawn sub-seeds for each process
+    child_seeds = seed_seq.spawn(num_processes)
+
+    # Convert each child SeedSequence into an integer seed
+    seeds = [s.generate_state(1)[0] for s in child_seeds]
+
+    return seeds  # Returns the list of unique seeds
+
+
 def SigProfilerSimulator(
     project,
     project_path,
@@ -183,6 +238,10 @@ def SigProfilerSimulator(
         "\n======================================\n        SigProfilerSimulator        \n======================================\n\nChecking for all reference files and relevant matrices..."
     )
     start_run = time.time()
+
+    # Generate and set random seeds
+    seeds = setup_seeds(project_path, seed_file)
+    np.random.seed(seeds[0])  # Setting the NumPy random seed
 
     # Ensures proper string for the project's path
     if project_path[-1] != "/":
@@ -808,21 +867,6 @@ def SigProfilerSimulator(
             iter_bin = 0
         iterations_parallel[iter_bin].append(i)
         iter_bin += 1
-
-    # Generate unique seeds for each process
-    log_out.write("\n-------Seeds for random number generation per process------- \n")
-    seeds = []
-    if seed_file == None:
-        ref_dir, tail = os.path.split(os.path.dirname(os.path.abspath(__file__)))
-        seed_file = ref_dir + "/SigProfilerSimulator/seeds.txt"
-    with open(seed_file) as f:
-        for i in range(0, max_seed, 1):
-            new_seed = int(int(f.readline().strip()) / time.time())
-            seeds.append(new_seed)
-            log_out.write("Process " + str(i) + ": " + str(new_seed) + "\n")
-
-    log_out.write("\n\n\n-------Runtime Checkpoints------- \n")
-    log_out.close()
 
     if exome:
         bed = True
