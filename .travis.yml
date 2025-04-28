@@ -5,9 +5,19 @@ python:
   - '3.9'
   - '3.12'
 
+before_install:
+  - if ! [ -f ./src/GRCh37.tar.gz ]; then wget --connect-timeout=10 --tries=20 ftp://alexandrovlab-ftp.ucsd.edu/pub/tools/SigProfilerMatrixGenerator/GRCh37.tar.gz -P ./src/; fi
+
 install:
   - pip install .
 
+cache:
+  directories:
+    - $TRAVIS_BUILD_DIR/src/
+  
+before_script:
+  - SigProfilerMatrixGenerator install GRCh37 --local_genome $TRAVIS_BUILD_DIR/src/
+  
 script: 
   - python3 test.py
   - pytest -s -rw test
