@@ -44,21 +44,29 @@ $ python3
   where project, project_path, and genome must be strings (surrounded by quotation marks, ex: "test"), and contexts is a list of the desired contexts to simulate (ex: contexts=["96", "ID"]) Optional
   parameters include:
   
-      exome=None:       [boolean] Simulates on the exome of the reference genome
-      simulations=1:	       [integer] Number of desired iterations per sample. Default is 1 iteration.
-      updating=False:       [boolean] Updated the chromosome with each mutation. Default is FALSE.
-      bed_file=None:      [string path to bed_file] Simulates on custom regions of the genome. Requires the full path to the BED file. 
-      overlap=False:       [boolean] Allows overlapping of mutations along the chromosome. Default is FALSE.
-      gender='female':       [string] Simulate male or female genomes. Default is 'female'
-      chrom_based=False  [boolean] Maintains the same catalogs of mutations on a per chromosome basis.
-      seed_file=None:       [string] Path to user defined seeds. One seed is required per processor. Uses a built in file by default
-      noisePoisson=False:       [boolean] Add poisson noise to the simulations. Default is FALSE.     
-      noiseAWGN=0:       [Float] Add a noise dependent on a +/- allowance of noise (ex: noiseAWGN=5 allows +/-2.5\% of mutations for each mutation type). Default is 0 noise. 
-      cushion=100:       [integer] Allowable cushion when simulating on the exome or targetted panel. Default is 100 base pairs
-      region=None:       [string] Path to targetted region panel for simulated on a user-defined region. Default is whole-genome simulations.
-      vcf=False		[boolean] Outputs simulated samples as vcf files with one file per iteration per sample. By default, the tool outputs all samples from an iteration into a single maf file.
-      mask=None	[string] Path to probability mask file. A mask file format is tab-separated with the following required columns: Chromosome, Start, End, Probability.
-                                              Note: Mask parameter does not support exome data where bed_file flag is set to true, and the following header fields are required: Chromosome, Start, End, Probability.
+### Parameters
+
+| Category         | Parameter       | Type     | Description |
+|------------------|----------------|----------|-------------|
+| **Required**     | `project`      | `str`    | Name for the simulation run. Used as a prefix for output files. |
+|                  | `project_path` | `str`    | Directory where output will be saved. Must contain an `input/` subdirectory with VCF or MAF files. |
+|                  | `genome`       | `str`    | Reference genome to use (`"GRCh37"`, `"GRCh38"`, `"mm10"`, etc.). |
+|                  | `contexts`     | `list`   | Mutation contexts to simulate (e.g., `["96"]`, `["ID"]`, `["96", "ID"]`). |
+| **Optional**     | `exome`        | `bool`   | Simulates mutations on the exome of the reference genome. |
+|                  | `simulations`  | `int`    | Number of iterations to simulate per sample. Default is `1`. |
+|                  | `updating`     | `bool`   | Updates the chromosome with each mutation. Default is `False`. |
+|                  | `bed_file`     | `str`    | Full path to a BED file for simulating on custom genomic regions. |
+|                  | `overlap`      | `bool`   | Allows overlapping mutations along the chromosome. Default is `False`. |
+|                  | `gender`       | `str`    | Gender of the simulated genome (`"male"` or `"female"`). Default is `"female"`. |
+|                  | `chrom_based`  | `bool`   | maintains the same catalogs of mutations on a per chromosome basis. Default is `False`. |
+|                  | `seed_file`    | `str`    | Path to a file containing a single master seed. This seed is used to generate a sequence of internal seeds for parallel simulation. If `None`, a new seed is generated and saved to `<project_path>/output/Simulator_seeds.txt`. ***To reproduce runs exactly, run with the same number of CPU cores.*** |
+|                  | `noisePoisson` | `bool`   | Adds Poisson noise to the simulations. Default is `False`. |
+|                  | `noiseAWGN`    | `float`  | Adds additive white Gaussian noise (±%) to the mutation counts per category (e.g., `noiseAWGN=5` allows ±2.5% variation). Default is `0`. |
+|                  | `cushion`      | `int`    | Base-pair padding around exons or target regions during simulation. Default is `100`. |
+|                  | `region`       | `str`    | Path to a target region panel for simulating on custom-defined regions. Default is whole-genome simulations. |
+|                  | `vcf`          | `bool`   | If `True`, outputs simulated samples as individual VCF files per iteration per sample. Default is `False` (MAF format). |
+|                  | `mask`         | `str`    | Path to a probability mask file (TSV format) with required columns: `Chromosome`, `Start`, `End`, `Probability`. Not compatible with `bed_file=True`. |
+
 
 **INPUT FILE FORMAT**
 
@@ -99,7 +107,7 @@ For all errors, please email the error and progress log files to the primary con
 
 **CITATION**
 
-Erik N. Bergstrom, Mark Barnes, I�igo Martincorena, Ludmil B. Alexandrov
+Erik N. Bergstrom, Mark Barnes, I�igo Martincorena, Ludmil B. Alexandrov
 bioRxiv 2020.02.13.948422; doi: https://doi.org/10.1101/2020.02.13.948422
 https://www.biorxiv.org/content/10.1101/2020.02.13.948422v1
 

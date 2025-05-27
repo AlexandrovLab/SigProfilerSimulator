@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.2] - 2025-05-27
+
+### Added
+- Support for running deterministic simulations using a `seed_file` via the `SigProfilerSimulator(seed_file=...)` parameter.
+- Pytest-based test suite to validate reproducibility of simulations with and without seed files.
+- `pyproject.toml` added to support modern build tools and packaging standards.
+
+## [1.2.1] - 2025-04-03
+
+### Added
+- Support for `mm39` genome assembly.
+
 ## [1.2.0] - 2025-02-24
 
 ### Changed
