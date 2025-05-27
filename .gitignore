@@ -10,3 +10,15 @@ build/
 
 # Hidden files and directories
 *.DS_Store
+
+# Ignore test outputs from pytest simulation runs
+tests/**/example/output/
+tests/**/example_copy/output/
+
+# Ignore logs from simulator or matrix generator
+tests/**/example/logs/
+tests/**/example_copy/logs/
+
+# Ignore any test.vcf input files generated/copied into test folders
+tests/**/example/input/test.vcf
+tests/**/example_copy/input/test.vcf

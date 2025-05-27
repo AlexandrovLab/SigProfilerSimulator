@@ -441,6 +441,9 @@ def SigProfilerSimulator(
     log_out.write("numpy version: " + np.__version__ + "\n")
 
     log_out.write("\n-------Vital Parameters Used for the execution -------\n")
+    num_cores = mp.cpu_count()
+    log_out.write(f"Number of processors available: {num_cores}\n")
+
     log_out.write(
         "Project: {}\nGenome: {}\nInput File Path: {}\ncontexts: {}\nexome: {}\nsimulations: {}\nupdating: {}\nbed_file: {}\noverlap: {}\ngender: {}\nseqInfo: {}\nchrom_based: {}\nseed_file: {}\n".format(
             project,

@@ -20,5 +20,5 @@ before_script:
   
 script: 
   - python3 test.py
-  - pytest -s -rw test
+  - pytest -s -rw tests
 
